@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if test "$#" -lt 1; then
+    printf 'usage: sum-up-timesheet <timesheet>.csv ...\n'
+    exit 1
+fi
+
+exec sh lib/run-scheme.sh "$PWD/lib/sum-up-sheet.scm" "$@"
