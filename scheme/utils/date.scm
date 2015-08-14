@@ -115,6 +115,10 @@ Example: (alist-date '((year . 2015) (month . 3) (day 27)))
                          12))
             7)))
 
+(define (week-day* date)
+  (let ((dow (week-day date)))
+    (if (zero? dow) 7 dow)))
+
 (define (is-week-end? d)
   "Determine whether D is either a saturday or a sunday."
   (let ((dow (week-day d)))
@@ -155,18 +159,26 @@ part of the last week of the last week of the past year.
 
 Examples:
 
+  (date->week '(2008 12 30)) => 1
   (date->week '(2007 01 01)) => 1
   (date->week '(2006 01 01)) => 52
   (date->week '(2005 01 01)) => 53"
   (let* ((doy (day-of-year date))
-         (first* (week-day (list (car date) 1 1)))
-         (first (if (zero? first*) 7 first*))
-         (week-division (lambda (o) (+ o (int/ (+ (- first 9) doy) 7)))))
-    (cond ((< first 5)
-           (week-division 2))
-          ((<= doy (- 8 first))
-           (date->week (list (- (car date) 1) 12 31)))
-          (else (week-division 1)))))
+         (first (week-day* (list (car date) 1 1)))
+         (week-division (lambda (o) (+ o (int/ (+ (- first 9) doy) 7))))
+         (week (cond ((< first 5)
+                      (week-division 2))
+                     ((<= doy (- 8 first))
+                      (date->week (list (- (car date) 1) 12 31)))
+                     (else (week-division 1)))))
+    (if (and (< (cadr date) 12)
+             (< (caddr date) 28))
+        week
+        (let ((days-in-last-week (week-day* (list (car date) 12 31))))
+          (if (and (< days-in-last-week 4)
+                   (< (- 31 (caddr date)) days-in-last-week))
+              1
+              week)))))
 
 (define (days-left-in-month date)
   (let ((dpm (days-per-month (car date) (cadr date))))
