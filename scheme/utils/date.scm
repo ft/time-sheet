@@ -32,6 +32,7 @@
             date-
             date-span
             day-of-year
+            date+woy->year
             easter-date))
 
 (define (date->alist d)
@@ -179,6 +180,18 @@ Examples:
                    (< (- 31 (caddr date)) days-in-last-week))
               1
               week)))))
+
+(define (date+woy->year date woy)
+  "Considering DATE and ISO WEEK-OF-YEAR (WOY), produre a year.
+
+Such that the year matches the WEEK-OF-YEAR."
+  (cond ((and (= 1 (cadr date))
+              (> woy 50))
+         (- (car date) 1))
+        ((and (= 12 (cadr date))
+              (= 1 woy))
+         (+ (car date) 1))
+        (else (car date))))
 
 (define (days-left-in-month date)
   (let ((dpm (days-per-month (car date) (cadr date))))
