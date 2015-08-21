@@ -172,8 +172,8 @@ Examples:
                      ((<= doy (- 8 first))
                       (date->week (list (- (car date) 1) 12 31)))
                      (else (week-division 1)))))
-    (if (and (< (cadr date) 12)
-             (< (caddr date) 28))
+    (if (not (and (= (cadr date) 12)
+                  (> (caddr date) 28)))
         week
         (let ((days-in-last-week (week-day* (list (car date) 12 31))))
           (if (and (< days-in-last-week 4)
