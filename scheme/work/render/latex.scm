@@ -305,17 +305,23 @@ identity function: (lambda (x) x).
     (string-join lst " & " 'infix))
 
   (define (make-weekly-day-printer)
-    (let ((n -1)
-          (style-a (assq-ref styles 'days-a))
-          (style-b (assq-ref styles (if alternating-shade 'days-b 'days-a))))
+    (let* ((n -1)
+           (style-a (assq-ref styles 'days-a))
+           (style-b (assq-ref styles (if alternating-shade 'days-b 'days-a)))
+           (style-a-row (car style-a))
+           (style-a-col (cdr style-a))
+           (style-b-row (car style-b))
+           (style-b-col (cdr style-b)))
       (lambda (date sym type dsum wsum)
         (set! n (+ 1 n))
-        (table-line ((if (zero? (modulo n 2)) style-a style-b)
-                     (table-columns (render-date date)
-                                    (day->name sym)
-                                    (entry->string type)
-                                    (render-hours dsum)
-                                    (render-hours wsum)))))))
+        (let ((row-style (if (zero? (modulo n 2)) style-a-row style-b-row))
+              (col-style (if (zero? (modulo n 2)) style-a-col style-b-col)))
+          (table-line (row-style
+                       (table-columns (col-style (render-date date))
+                                      (col-style (day->name sym))
+                                      (col-style (entry->string type))
+                                      (col-style (render-hours dsum))
+                                      (col-style (render-hours wsum)))))))))
 
   (define (render-day day weekly-sum cal-sum meta printer)
     (match day
@@ -342,48 +348,57 @@ identity function: (lambda (x) x).
 
   (define (week-header week cal-sum)
     (hline)
-    (let ((y (car (caadar week)))
-          (w (assq-ref week 'week))
-          (line-style (assq-ref styles 'header)))
-      (table-line (line-style (table-columns
-                               (multicolumn (key-value 'year y)
-                                            #:width 2
-                                            #:alignment "|l")
-                               (multicolumn (key-value 'iso-week w)
-                                            #:width 3
-                                            #:alignment "l|")))))
+    (let* ((y (car (caadar week)))
+           (w (assq-ref week 'week))
+           (style (assq-ref styles 'header))
+           (row-style (car style))
+           (col-style (cdr style)))
+      (table-line (row-style (table-columns
+                              (multicolumn (col-style (key-value 'year y))
+                                           #:width 2
+                                           #:alignment "|l")
+                              (multicolumn (col-style (key-value 'iso-week w))
+                                           #:width 3
+                                           #:alignment "l|")))))
     (when (memq 'days weekly-structure) (hline)))
 
   (define (weekly-summary meta weekly-sum cal-sum cal-balance)
     (define (meta-kv key) (list key (assq-ref meta key)))
     (hline)
-    (let ((b (assq-ref meta 'balance))
-          (line-style (assq-ref styles 'summary)))
+    (let* ((b (assq-ref meta 'balance))
+           (style (assq-ref styles 'summary))
+           (row-style (car style))
+           (col-style (cdr style)))
       (table-line
-       (line-style (table-columns
-                    (multicolumn (multi-key-value (meta-kv 'workdays)
-                                                  (meta-kv 'vacation-days)
-                                                  (meta-kv 'holidays))
-                                 #:width 3
-                                 #:alignment "|l|")
-                    (multicolumn (strcat (entry->string 'calendar-sum) ":")
-                                 #:alignment "r")
-                    (multicolumn (render-hours cal-sum)
-                                 #:alignment "r|"))))
+       (row-style (table-columns
+                   (multicolumn
+                    (col-style (multi-key-value (meta-kv 'workdays)
+                                                (meta-kv 'vacation-days)
+                                                (meta-kv 'holidays)))
+                    #:width 3
+                    #:alignment "|l|")
+                   (multicolumn
+                    (col-style (strcat (entry->string 'calendar-sum) ":"))
+                    #:alignment "r")
+                   (multicolumn (col-style (render-hours cal-sum))
+                                #:alignment "r|"))))
       (table-line
-       (line-style (table-columns
-                    (multicolumn (multi-key-value
-                                  (meta-kv 'required)
-                                  (list 'hours (render-hours weekly-sum))
-                                  (list 'balance
-                                        (strcat (if (> b 0) "+" "")
-                                                (render-hours cal-balance))))
-                                 #:width 3
-                                 #:alignment "|l|")
-                    (multicolumn (strcat (entry->string 'balance) ":")
-                                 #:alignment "r")
-                    (multicolumn (render-hours cal-balance)
-                                 #:alignment "r|"))))))
+       (row-style (table-columns
+                   (multicolumn
+                    (col-style (multi-key-value
+                                (meta-kv 'required)
+                                (list 'hours (render-hours weekly-sum))
+                                (list 'balance
+                                      (strcat (if (> b 0) "+" "")
+                                              (render-hours cal-balance)))))
+                    #:width 3
+                    #:alignment "|l|")
+                   (multicolumn
+                    (col-style (strcat (entry->string 'balance) ":"))
+                    #:alignment "r")
+                   (multicolumn
+                    (col-style (render-hours cal-balance))
+                    #:alignment "r|"))))))
 
   (define (render-week week cal-sum cal-balance)
     (match week
