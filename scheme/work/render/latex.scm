@@ -460,7 +460,7 @@ identity function: (lambda (x) x).
                          (class 'scrreprt)
                          (content (lambda () #f))
                          (document-options (options a4paper
-                                                    12pt
+                                                    10pt
                                                     (listof totoc)))
                          (geometry (options a4paper
                                             includehead
