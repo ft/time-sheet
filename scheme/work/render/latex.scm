@@ -414,6 +414,8 @@ identity function: (lambda (x) x).
               (use-package 'geometry geometry)
               (use-package 'luainputenc (options utf8))
               (use-package 'longtable)
+              (use-package 'color)
+              (use-package 'colortbl)
               (begin-environment 'document))
   (content)
   (display-to port (end-environment 'document)))
