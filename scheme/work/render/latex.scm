@@ -29,7 +29,9 @@
             pretty-days
             pretty-items
             pretty-months
+            pretty-styles
             latex-document
+            line-style
             table-from))
 
 (eval-when (expand load eval)
