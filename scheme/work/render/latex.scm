@@ -241,7 +241,7 @@ identity function: (lambda (x) x).
                       #:intensity 0.8))
   (days-a (line-style))
   (days-b (line-style #:colour 'gray #:intensity 0.25))
-  (tasks (line-style))
+  (tasks (line-style #:size 'tiny))
   (summary (line-style #:colour 'gray #:intensity 0.1)))
 
 (define* (pretty-months #:key
