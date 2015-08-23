@@ -117,7 +117,9 @@ identity function: (lambda (x) x).
   #:intensity => With `#:colour' set to `named' of `gray' this defines the
                  intensity of the colour.
 
-  #:size => Defines the font size for the text.
+  #:size => Defines the font size for the text. This may be an integer or a
+            symbol that specifies one of LaTeX's default font sizes (like
+            Huge, tiny or scriptsize).
 
   #:size-unit => The unit used for #:size (default: pt)
 
@@ -136,6 +138,7 @@ identity function: (lambda (x) x).
   (define (unit-fallback size unit fallback)
     (if size unit fallback))
   (cond ((not (or s ls)) text)
+        ((symbol? s) (format #f "{\\~a ~a}" s text))
         (else (format #f "{\\fontsize{~a~a}{~a~a}\\selectfont ~a}"
                       (size-fallback s ls)
                       (unit-fallback s su lsu)
