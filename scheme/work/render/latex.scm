@@ -309,7 +309,28 @@ identity function: (lambda (x) x).
     (number->string (exact->inexact h)))
 
   (define (render-task task)
-    (format port "~a~%" (assq-ref task 'comment)))
+    (let* ((style (assq-ref styles 'tasks))
+           (row-style (car style))
+           (col-style (cdr style))
+           (id (assq-ref task 'ticket-id))
+           (subject (assq-ref task 'ticket-subject))
+           (project (assq-ref task 'project))
+           (comment (assq-ref task 'comment)))
+      (table-line
+       (row-style
+        (table-columns
+         (multicolumn
+          (col-style (format #f "~a~a: ~a"
+                             (if id "\\#" "")
+                             (if id id (latex-escape project))
+                             (latex-escape (if id subject comment))))
+          #:width 3
+          #:alignment "|l|")
+         (multicolumn
+          (col-style (render-hours (assq-ref task 'time)))
+          #:width 1
+          #:alignment "r|")
+         (multicolumn "" #:width 1 #:alignment "r|"))))))
 
   (define (table-columns . lst)
     (string-join lst " & " 'infix))
@@ -340,8 +361,11 @@ identity function: (lambda (x) x).
          (printer date day-symbol day-type
                   daily-sum
                   (+ daily-sum weekly-sum))
-         (when (memq 'tasks weekly-structure)
-           (for-each render-task tasks)))
+         (when (and (memq 'tasks weekly-structure)
+                    (not (null? tasks)))
+           (hline)
+           (for-each render-task tasks)
+           (hline)))
        daily-sum)
       (_ (throw 'broken-day-data day))))
 
