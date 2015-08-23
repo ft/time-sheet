@@ -88,6 +88,82 @@
 (define (end-environment env)
   (latex-macro-with-options 'end '() env))
 
+(define* (line-style #:key
+                     (colour #f)
+                     (hue #f)
+                     (intensity 1)
+                     (size #f)
+                     (size-unit 'pt)
+                     (line-space #f)
+                     (line-space-unit 'em))
+  "Return a text-property setter.
+
+The return value is a function of one argument, which is used as a string that
+the function will wrap into LaTeX code that applies a number of properties,
+which define the way the text is rendered.
+
+line-style uses keyword arguments to determine the type of function it returns,
+the default values of these keywords will cause the function to return the
+identity function: (lambda (x) x).
+
+  #:colour => this has to be either `gray', `rgb', `cmyk', `named' or any
+              colour recognised by the `color' LaTeX package.
+
+  #:hue => In case `#:colour' is `named' this defines the colour to be used by
+           name. If it is `rgb' this has to be a list of three values between
+           0 and 1; in case of `cmyk' a list of four values between 0 and 1. In
+           case of `gray' this value is ignored.
+
+  #:intensity => With `#:colour' set to `named' of `gray' this defines the
+                 intensity of the colour.
+
+  #:size => Defines the font size for the text.
+
+  #:size-unit => The unit used for #:size (default: pt)
+
+  #:line-space => Defines the line-space for the text.
+
+  #:line-space-unit => The unit used for #:line-space (default: em)"
+  (cond ((not (or colour size line-space)) (lambda (x) x))
+        (else (lambda (x)
+                (with-colour colour hue intensity
+                             (with-size size size-unit
+                                        line-space line-space-unit x))))))
+
+(define (with-size s su ls lsu text)
+  (define (size-fallback size fallback)
+    (if size size fallback))
+  (define (unit-fallback size unit fallback)
+    (if size unit fallback))
+  (cond ((not (or s ls)) text)
+        (else (format #f "{\\fontsize{~a~a}{~a~a}\\selectfont ~a}"
+                      (size-fallback s ls)
+                      (unit-fallback s su lsu)
+                      (size-fallback ls s)
+                      (unit-fallback ls lsu su)
+                      text))))
+
+(define (with-colour c h i text)
+  (define (join-colour value len excpt)
+    (if (= (length h) 3)
+        (string-join (map (lambda (x)
+                            (number->string
+                             (exact->inexact x)))
+                          h)
+                     "," 'infix)
+        (throw excpt h)))
+  (cond ((not c) text)
+        (else (let ((model (case c
+                             ((gray rbg cmyk named) c)
+                             (else 'named)))
+                    (value (case c
+                             ((gray) (- 1 i))
+                             ((named) i)
+                             ((rgb) (join-colour h 3 'invalid-rgb-set))
+                             ((cmyk) (join-colour h 4 'invalid-cmyk-set))
+                             (else c))))
+                (format #f "\\rowcolor[~a]{~a} ~a" model value text)))))
+
 (define-syntax-rule (define-render-alist name (key val) ...)
   (define* (name #:key (key val) ...)
     (list (cons (quote key) key) ...)))
@@ -127,6 +203,13 @@
   (daily-sum 'right)
   (weekly-sum 'right))
 
+(define-render-alist pretty-styles
+  (header (line-style))
+  (days-a (line-style))
+  (days-b (line-style #:colour 'gray #:intensity 0.4))
+  (tasks (line-style))
+  (summary (line-style)))
+
 (define* (pretty-months #:key
                         (january 'January)
                         (febuary 'Febuary)
@@ -152,6 +235,7 @@
                      (days (pretty-days))
                      (months (pretty-months))
                      (pretty (pretty-items))
+                     (styles (pretty-styles))
                      (alignment (pretty-alignment)))
   (define* (hline #:key (times 1))
     (let loop ((iter times))
