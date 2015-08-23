@@ -209,7 +209,9 @@
        (when (memq 'days weekly-structure)
          (common-line date day-symbol day-type
                       daily-sum
-                      (+ daily-sum weekly-sum)))
+                      (+ daily-sum weekly-sum))
+         (when (memq 'tasks weekly-structure)
+           (for-each render-task tasks)))
        daily-sum)
       (_ (throw 'broken-day-data day))))
 
