@@ -154,7 +154,7 @@ identity function: (lambda (x) x).
         (throw excpt h)))
   (cond ((not c) text)
         (else (let ((model (case c
-                             ((gray rbg cmyk named) c)
+                             ((gray rgb cmyk named) c)
                              (else 'named)))
                     (value (case c
                              ((gray) (- 1 i))
