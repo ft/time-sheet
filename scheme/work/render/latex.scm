@@ -228,7 +228,11 @@ identity function: (lambda (x) x).
   (weekly-sum 'right))
 
 (define-render-alist pretty-styles
-  (header (line-style #:colour 'gray #:intensity 0.4))
+  (header (line-style #:size 'scriptsize
+                      #:text-colour 'rgb
+                      #:text-hue '(1 1 1)
+                      #:colour 'gray
+                      #:intensity 0.8))
   (days-a (line-style))
   (days-b (line-style #:colour 'gray #:intensity 0.25))
   (tasks (line-style))
