@@ -25,6 +25,7 @@
   #:use-module (utils date)
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
+  #:use-module (ice-9 regex)
   #:export (pretty-alignment
             pretty-days
             pretty-items
@@ -189,6 +190,9 @@ identity function: (lambda (x) x).
 (define (with-text-colour c h i text)
   (with-colour* 'color c h i text
                 (lambda (x) (strcat "{" x "}"))))
+
+(define (latex-escape data)
+  (regexp-substitute/global #f "([_&#])" data 'pre "\\" 1 'post))
 
 (define-syntax-rule (define-render-alist name (key val) ...)
   (define* (name #:key (key val) ...)
