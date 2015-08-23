@@ -92,15 +92,22 @@
                      (colour #f)
                      (hue #f)
                      (intensity 1)
+                     (text-colour #f)
+                     (text-hue #f)
+                     (text-intensity 1)
                      (size #f)
                      (size-unit 'pt)
                      (line-space #f)
                      (line-space-unit 'em))
   "Return a text-property setter.
 
-The return value is a function of one argument, which is used as a string that
-the function will wrap into LaTeX code that applies a number of properties,
-which define the way the text is rendered.
+The return value is a pair of functions of one argument. That argument is used
+as a string that the functions will wrap into LaTeX code that applies a number
+of properties, which define the way the text is rendered.
+
+The first function of the pair applies properties to an entire line in a table,
+the second function applies properties to a piece of text in a column of a line
+in a table.
 
 line-style uses keyword arguments to determine the type of function it returns,
 the default values of these keywords will cause the function to return the
@@ -117,6 +124,12 @@ identity function: (lambda (x) x).
   #:intensity => With `#:colour' set to `named' of `gray' this defines the
                  intensity of the colour.
 
+  #:text-colour => Like #:colour but for text.
+
+  #:text-hue => Like #:hue but for text.
+
+  #:text-intensity => Like #:intensity but for text.
+
   #:size => Defines the font size for the text. This may be an integer or a
             symbol that specifies one of LaTeX's default font sizes (like
             Huge, tiny or scriptsize).
@@ -126,11 +139,12 @@ identity function: (lambda (x) x).
   #:line-space => Defines the line-space for the text.
 
   #:line-space-unit => The unit used for #:line-space (default: em)"
-  (cond ((not (or colour size line-space)) (lambda (x) x))
-        (else (lambda (x)
-                (with-colour colour hue intensity
-                             (with-size size size-unit
-                                        line-space line-space-unit x))))))
+  (cons (lambda (x)
+          (with-row-colour colour hue intensity x))
+        (lambda (x)
+          (with-text-colour text-colour text-hue text-intensity
+                            (with-size size size-unit
+                                       line-space line-space-unit x)))))
 
 (define (with-size s su ls lsu text)
   (define (size-fallback size fallback)
@@ -146,7 +160,7 @@ identity function: (lambda (x) x).
                       (unit-fallback ls lsu su)
                       text))))
 
-(define (with-colour c h i text)
+(define (with-colour* macro c h i text pp)
   (define (join-colour value len excpt)
     (if (= (length h) 3)
         (string-join (map (lambda (x)
@@ -165,7 +179,14 @@ identity function: (lambda (x) x).
                              ((rgb) (join-colour h 3 'invalid-rgb-set))
                              ((cmyk) (join-colour h 4 'invalid-cmyk-set))
                              (else c))))
-                (format #f "\\rowcolor[~a]{~a} ~a" model value text)))))
+                (pp (format #f "\\~a[~a]{~a} ~a" macro model value text))))))
+
+(define (with-row-colour c h i text)
+  (with-colour* 'rowcolor c h i text (lambda (x) x)))
+
+(define (with-text-colour c h i text)
+  (with-colour* 'color c h i text
+                (lambda (x) (strcat "{" x "}"))))
 
 (define-syntax-rule (define-render-alist name (key val) ...)
   (define* (name #:key (key val) ...)
