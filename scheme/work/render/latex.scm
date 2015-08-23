@@ -280,20 +280,26 @@ identity function: (lambda (x) x).
   (define (table-columns . lst)
     (string-join lst " & " 'infix))
 
-  (define (common-line date sym type dsum wsum)
-    (table-line (table-columns (render-date date)
-                               (day->name sym)
-                               (entry->string type)
-                               (render-hours dsum)
-                               (render-hours wsum))))
+  (define (make-weekly-day-printer)
+    (let ((n -1)
+          (style-a (assq-ref styles 'days-a))
+          (style-b (assq-ref styles (if alternating-shade 'days-b 'days-a))))
+      (lambda (date sym type dsum wsum)
+        (set! n (+ 1 n))
+        (table-line ((if (zero? (modulo n 2)) style-a style-b)
+                     (table-columns (render-date date)
+                                    (day->name sym)
+                                    (entry->string type)
+                                    (render-hours dsum)
+                                    (render-hours wsum)))))))
 
-  (define (render-day day weekly-sum cal-sum meta)
+  (define (render-day day weekly-sum cal-sum meta printer)
     (match day
       ((date (day-symbol day-type daily-sum) tasks)
        (when (memq 'days weekly-structure)
-         (common-line date day-symbol day-type
-                      daily-sum
-                      (+ daily-sum weekly-sum))
+         (printer date day-symbol day-type
+                  daily-sum
+                  (+ daily-sum weekly-sum))
          (when (memq 'tasks weekly-structure)
            (for-each render-task tasks)))
        daily-sum)
@@ -351,26 +357,28 @@ identity function: (lambda (x) x).
       ((days meta ...)
        (when (memq 'header weekly-structure)
          (week-header week cal-sum))
-       (let loop ((rest (cdr days)) (weekly-sum 0))
-         (if (null? rest)
-             (let ((balance (assq-ref meta 'balance)))
-               (when (memq 'summary weekly-structure)
-                 (weekly-summary meta weekly-sum
-                                 (+ weekly-sum cal-sum)
-                                 (+ balance cal-balance)))
-               (unless (= weekly-sum (assq-ref week 'hours))
-                 ;; If these are not the same, either this code is wrong, or
-                 ;; the calendar generation is wrong, or both are wrong.
-                 (throw 'inconsistent-weekly-sum
-                        weekly-sum (assq-ref week 'hours)))
-               (hline)
-               (list weekly-sum balance))
-             (begin
-               (loop (cdr rest) (+ weekly-sum
-                                   (render-day (car rest)
-                                               weekly-sum
-                                               cal-sum
-                                               meta)))))))
+       (let ((day-printer (make-weekly-day-printer)))
+         (let loop ((rest (cdr days)) (weekly-sum 0))
+           (if (null? rest)
+               (let ((balance (assq-ref meta 'balance)))
+                 (when (memq 'summary weekly-structure)
+                   (weekly-summary meta weekly-sum
+                                   (+ weekly-sum cal-sum)
+                                   (+ balance cal-balance)))
+                 (unless (= weekly-sum (assq-ref week 'hours))
+                   ;; If these are not the same, either this code is wrong, or
+                   ;; the calendar generation is wrong, or both are wrong.
+                   (throw 'inconsistent-weekly-sum
+                          weekly-sum (assq-ref week 'hours)))
+                 (hline)
+                 (list weekly-sum balance))
+               (begin
+                 (loop (cdr rest) (+ weekly-sum
+                                     (render-day (car rest)
+                                                 weekly-sum
+                                                 cal-sum
+                                                 meta
+                                                 day-printer))))))))
       (_ (throw 'broken-week-day week))))
 
   (define (gen-alignment)
