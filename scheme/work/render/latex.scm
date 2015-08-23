@@ -465,7 +465,7 @@ identity function: (lambda (x) x).
                          (geometry (options a4paper
                                             includehead
                                             (top 2.5cm)
-                                            (headsep 1cm)
+                                            (headsep 0cm)
                                             (bottom 2.5cm)
                                             (left 3.0cm)
                                             (right 2.5cm))))
