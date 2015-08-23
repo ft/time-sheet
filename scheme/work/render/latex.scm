@@ -204,11 +204,11 @@ identity function: (lambda (x) x).
   (weekly-sum 'right))
 
 (define-render-alist pretty-styles
-  (header (line-style))
+  (header (line-style #:colour 'gray #:intensity 0.4))
   (days-a (line-style))
-  (days-b (line-style #:colour 'gray #:intensity 0.4))
+  (days-b (line-style #:colour 'gray #:intensity 0.25))
   (tasks (line-style))
-  (summary (line-style)))
+  (summary (line-style #:colour 'gray #:intensity 0.125)))
 
 (define* (pretty-months #:key
                         (january 'January)
@@ -319,38 +319,47 @@ identity function: (lambda (x) x).
   (define (week-header week cal-sum)
     (hline)
     (let ((y (car (caadar week)))
-          (w (assq-ref week 'week)))
-      (table-line
-       (table-columns
-        (multicolumn (key-value 'year y) #:width 2 #:alignment "|l")
-        (multicolumn (key-value 'iso-week w) #:width 3 #:alignment "l|"))))
+          (w (assq-ref week 'week))
+          (line-style (assq-ref styles 'header)))
+      (table-line (line-style (table-columns
+                               (multicolumn (key-value 'year y)
+                                            #:width 2
+                                            #:alignment "|l")
+                               (multicolumn (key-value 'iso-week w)
+                                            #:width 3
+                                            #:alignment "l|")))))
     (when (memq 'days weekly-structure) (hline)))
 
   (define (weekly-summary meta weekly-sum cal-sum cal-balance)
     (define (meta-kv key) (list key (assq-ref meta key)))
     (hline)
-    (table-line
-     (table-columns
-      (multicolumn (multi-key-value (meta-kv 'workdays)
-                                    (meta-kv 'vacation-days)
-                                    (meta-kv 'holidays))
-                   #:width 3
-                   #:alignment "|l")
-      (multicolumn (strcat (entry->string 'calendar-sum) ":") #:alignment "|r")
-      (multicolumn (render-hours cal-sum) #:alignment "r|")))
-    (let ((b (assq-ref meta 'balance)))
+    (let ((b (assq-ref meta 'balance))
+          (line-style (assq-ref styles 'summary)))
       (table-line
-       (table-columns
-        (multicolumn
-         (multi-key-value (meta-kv 'required)
-                          (list 'hours (render-hours weekly-sum))
-                          (list 'balance
-                                (strcat (if (> b 0) "+" "")
-                                        (render-hours cal-balance))))
-         #:width 3
-         #:alignment "|l")
-        (multicolumn (strcat (entry->string 'balance) ":") #:alignment "|r")
-        (multicolumn (render-hours cal-balance) #:alignment "r|")))))
+       (line-style (table-columns
+                    (multicolumn (multi-key-value (meta-kv 'workdays)
+                                                  (meta-kv 'vacation-days)
+                                                  (meta-kv 'holidays))
+                                 #:width 3
+                                 #:alignment "|l|")
+                    (multicolumn (strcat (entry->string 'calendar-sum) ":")
+                                 #:alignment "r")
+                    (multicolumn (render-hours cal-sum)
+                                 #:alignment "r|"))))
+      (table-line
+       (line-style (table-columns
+                    (multicolumn (multi-key-value
+                                  (meta-kv 'required)
+                                  (list 'hours (render-hours weekly-sum))
+                                  (list 'balance
+                                        (strcat (if (> b 0) "+" "")
+                                                (render-hours cal-balance))))
+                                 #:width 3
+                                 #:alignment "|l|")
+                    (multicolumn (strcat (entry->string 'balance) ":")
+                                 #:alignment "r")
+                    (multicolumn (render-hours cal-balance)
+                                 #:alignment "r|"))))))
 
   (define (render-week week cal-sum cal-balance)
     (match week
