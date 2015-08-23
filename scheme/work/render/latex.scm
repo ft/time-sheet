@@ -234,15 +234,11 @@ identity function: (lambda (x) x).
   (weekly-sum 'right))
 
 (define-render-alist pretty-styles
-  (header (line-style #:size 'scriptsize
-                      #:text-colour 'rgb
-                      #:text-hue '(1 1 1)
-                      #:colour 'gray
-                      #:intensity 0.8))
+  (header (line-style))
   (days-a (line-style))
-  (days-b (line-style #:colour 'gray #:intensity 0.25))
-  (tasks (line-style #:size 'tiny))
-  (summary (line-style #:colour 'gray #:intensity 0.1)))
+  (days-b (line-style))
+  (tasks (line-style))
+  (summary (line-style)))
 
 (define* (pretty-months #:key
                         (january 'January)
