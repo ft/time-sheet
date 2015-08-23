@@ -473,8 +473,8 @@ identity function: (lambda (x) x).
                                             (top 2.5cm)
                                             (headsep 0cm)
                                             (bottom 2.5cm)
-                                            (left 3.0cm)
-                                            (right 2.5cm))))
+                                            (left 1.5cm)
+                                            (right 1.5cm))))
   (display-to port
               (document-class class document-options)
               (use-package 'geometry geometry)
