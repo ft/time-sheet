@@ -80,7 +80,7 @@ Currently, SPAN is expected to be sorted in chronological order."
                               data)
                         acc)
                   (increment-if-type (type 'workday) workdays)
-                  (increment-if-type (type 'holidays) holidays)
+                  (increment-if-type (type 'holiday) holidays)
                   (increment-if-type (type 'vacation) vacation-days)
                   (+ hours hours-of-day)))))))
 
