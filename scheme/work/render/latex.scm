@@ -448,7 +448,18 @@ identity function: (lambda (x) x).
           (col-style (render-hours (assq-ref task 'time)))
           #:width 1
           #:alignment "r|")
-         (multicolumn "" #:width 1 #:alignment "r|"))))))
+         (multicolumn "" #:width 1 #:alignment "r|"))))
+      (when (and id (memq 'comments weekly-structure))
+        (table-line
+         (row-style
+          (table-columns
+           (multicolumn
+            (col-style (format #f "$\\quad$ ~a"
+                               (latex-escape comment)))
+            #:width 3
+            #:alignment "|l|")
+           (multicolumn "" #:width 1 #:alignment "r|")
+           (multicolumn "" #:width 1 #:alignment "r|")))))))
 
   (define (make-weekly-day-printer)
     (let* ((n -1)
