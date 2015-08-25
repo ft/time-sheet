@@ -33,7 +33,10 @@
         (lambda ()
           (table-from data
                       #:weekly-structure (if detailed?
-                                             (cons 'tasks struct)
+                                             (cons 'tasks
+                                                   (if (eq? detailed? 'extreme)
+                                                       (cons 'comments struct)
+                                                       struct))
                                              struct)
                       #:alternating-shade (not detailed?)
                       #:styles (pretty-styles #:header *header*
