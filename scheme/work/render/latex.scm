@@ -213,7 +213,7 @@ identity function: (lambda (x) x).
   (compensatory-days "Compensatory Days")
   (daily-sum "Daily Sum")
   (day 'Day)
-  (extra-leave 'Extra)
+  (extra-leave 'Extra-Leave)
   (extra-leave-days "Extra Leave Days")
   (holiday 'Holiday)
   (holidays 'Holidays)
