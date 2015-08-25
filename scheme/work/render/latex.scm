@@ -31,8 +31,10 @@
             pretty-items
             pretty-months
             pretty-styles
+            pretty-summary
             latex-document
             line-style
+            summary-for
             table-from))
 
 (eval-when (expand load eval)
@@ -250,6 +252,13 @@ identity function: (lambda (x) x).
   (tasks (line-style))
   (summary (line-style)))
 
+(define-render-alist pretty-summary
+  (header (line-style))
+  (general (line-style))
+  (off-days (line-style))
+  (hours (line-style))
+  (balance (line-style)))
+
 (define* (pretty-months #:key
                         (january 'January)
                         (febuary 'Febuary)
@@ -282,6 +291,101 @@ identity function: (lambda (x) x).
         (format port "~%")
         (begin (format port "\\hline")
                (loop (- iter 1))))))
+
+(define* (summary-for calendar
+                      #:key
+                      (port (current-output-port))
+                      (pretty (pretty-items))
+                      (styles (pretty-summary)))
+  (define (table-line x)
+    (format port "~a \\\\~%" x))
+  (define (entry->string e)
+    (maybe-convert (assq-ref pretty e)))
+  (define (styled-columns style . lst)
+    (apply table-columns (map style lst)))
+  (let* ((get (lambda (x)
+                (apply + (map (lambda (y) (assq-ref y x))
+                              calendar))))
+         (wd (get 'workdays))
+         (vd (get 'vacation-days))
+         (hd (get 'holidays))
+         (wed (get 'weekend-days))
+         (cp (get 'compensatory-days))
+         (el (get 'extra-leave-days))
+         (hours (get 'hours))
+         (balance (get 'balance))
+         (days (+ wd vd hd wed cp el))
+         (*header* (assq-ref styles 'header))
+         (ls-header (car *header*))
+         (cs-header (cdr *header*))
+         (*general* (assq-ref styles 'general))
+         (ls-general (car *general*))
+         (cs-general (cdr *general*))
+         (*off-days* (assq-ref styles 'off-days))
+         (ls-off-days (car *off-days*))
+         (cs-off-days (cdr *off-days*))
+         (*hours* (assq-ref styles 'hours))
+         (ls-hours (car *hours*))
+         (cs-hours (cdr *hours*))
+         (*balance* (assq-ref styles 'balance))
+         (ls-balance (car *balance*))
+         (cs-balance (cdr *balance*)))
+    (display-to port (begin-environment 'center))
+    (display-to port (begin-environment '(tabular "|l|r|")))
+    (hline port)
+    (table-line (ls-header (multicolumn (cs-header (entry->string 'summary))
+                                        #:width 2)))
+    (hline port)
+    (table-line (ls-general (styled-columns cs-general
+                                            (entry->string 'weeks)
+                                            (number->string (exact->inexact
+                                                             (/ days 7))))))
+    (hline port)
+    (table-line (ls-general (styled-columns cs-general
+                                            (entry->string 'days)
+                                            (number->string days))))
+    (hline port)
+    (table-line (ls-general (styled-columns cs-general
+                                            (entry->string 'workdays)
+                                            (number->string wd))))
+    (hline port)
+    (table-line (ls-off-days (styled-columns cs-off-days
+                                             (entry->string 'vacation-days)
+                                             (number->string vd))))
+    (hline port)
+    (table-line (ls-off-days (styled-columns cs-off-days
+                                             (entry->string 'compensatory-days)
+                                             (number->string cp))))
+    (hline port)
+    (table-line (ls-off-days (styled-columns cs-off-days
+                                             (entry->string 'extra-leave-days)
+                                             (number->string el))))
+    (hline port)
+    (table-line (ls-off-days (styled-columns cs-off-days
+                                             (entry->string 'holidays)
+                                             (number->string hd))))
+    (hline port)
+    (table-line (ls-off-days (styled-columns cs-off-days
+                                             (entry->string 'weekend-days)
+                                             (number->string wed))))
+    (hline port)
+    (table-line (ls-hours (styled-columns cs-hours
+                                          (entry->string 'required-hours)
+                                          (render-hours (* 8 wd)))))
+    (hline port)
+    (table-line (ls-hours (styled-columns cs-hours
+                                          (entry->string 'work-hours)
+                                          (render-hours hours))))
+    (hline port)
+    (table-line (ls-balance (styled-columns cs-balance
+                                            (entry->string 'balance)
+                                            (format #f "~a~a"
+                                                    (if (> balance 0)
+                                                        "+" "")
+                                                    (render-hours balance)))))
+    (hline port)
+    (display-to port (end-environment 'tabular))
+    (display-to port (end-environment 'center))))
 
 (define* (table-from calendar
                      #:key
