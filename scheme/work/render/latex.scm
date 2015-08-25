@@ -209,8 +209,12 @@ identity function: (lambda (x) x).
 
 (define-render-alist pretty-items
   (calendar-sum "Calendar Sum")
+  (compensatory 'Compensatory)
+  (compensatory-days "Compensatory Days")
   (daily-sum "Daily Sum")
   (day 'Day)
+  (extra-leave 'Extra)
+  (extra-leave-days "Extra Leave Days")
   (holiday 'Holiday)
   (holidays 'Holidays)
   (hours 'Hours)
@@ -405,6 +409,14 @@ identity function: (lambda (x) x).
                     (col-style (multi-key-value (meta-kv 'workdays)
                                                 (meta-kv 'vacation-days)
                                                 (meta-kv 'holidays)))
+                    #:width 3
+                    #:alignment "|l|")
+                   (multicolumn "" #:width 2 #:alignment "r|"))))
+      (table-line
+       (row-style (table-columns
+                   (multicolumn
+                    (col-style (multi-key-value (meta-kv 'compensatory-days)
+                                                (meta-kv 'extra-leave-days)))
                     #:width 3
                     #:alignment "|l|")
                    (multicolumn
