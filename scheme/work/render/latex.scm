@@ -439,7 +439,8 @@ identity function: (lambda (x) x).
                     (col-style (strcat (entry->string 'balance) ":"))
                     #:alignment "r")
                    (multicolumn
-                    (col-style (render-hours cal-balance))
+                    (col-style (strcat (if (> cal-balance 0) "+" "")
+                                       (render-hours cal-balance)))
                     #:alignment "r|"))))))
 
   (define (render-week week cal-sum cal-balance)
