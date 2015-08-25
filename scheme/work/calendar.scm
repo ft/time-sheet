@@ -49,15 +49,22 @@ Currently, SPAN is expected to be sorted in chronological order."
       (+ 1 var)
       var))
 
-(define (fill-week week ts hpd is-holiday? is-vacation?)
+(define (fill-week week ts hpd
+                   is-holiday?
+                   is-vacation?
+                   is-compensatory?
+                   is-extra-leave?)
   (let loop ((rest (caddr week))
              (acc '())
              (workdays 0)
              (holidays 0)
              (vacation-days 0)
+             (compensatory-days 0)
+             (extra-leave-days 0)
+             (weekend-days 0)
              (hours 0))
     (if (null? rest)
-        (let ((required (* hpd workdays)))
+        (let ((required (* hpd (+ compensatory-days workdays))))
           (list (cons 'data (reverse acc))
                 (cons 'year (car week))
                 (cons 'week (cadr week))
@@ -66,10 +73,15 @@ Currently, SPAN is expected to be sorted in chronological order."
                 (cons 'balance (- hours required))
                 (cons 'workdays workdays)
                 (cons 'vacation-days vacation-days)
-                (cons 'holidays holidays)))
+                (cons 'compensatory-days compensatory-days)
+                (cons 'extra-leave-days extra-leave-days)
+                (cons 'holidays holidays)
+                (cons 'weekend-days weekend-days)))
         (let* ((today (car rest))
                (type (cond ((is-vacation? today) 'vacation)
                            ((is-holiday? today) 'holiday)
+                           ((is-compensatory? today) 'compensatory)
+                           ((is-extra-leave? today) 'extra-leave)
                            ((is-week-end? today) 'weekend)
                            (else 'workday)))
                (data (filter-day today ts)))
@@ -82,19 +94,32 @@ Currently, SPAN is expected to be sorted in chronological order."
                   (increment-if-type (type 'workday) workdays)
                   (increment-if-type (type 'holiday) holidays)
                   (increment-if-type (type 'vacation) vacation-days)
+                  (increment-if-type (type 'compensatory) compensatory-days)
+                  (increment-if-type (type 'extra-leave) extra-leave-days)
+                  (increment-if-type (type 'weekend) weekend-days)
                   (+ hours hours-of-day)))))))
 
 (define (add-calendar-stats calendar)
   calendar)
 
-(define (fill-calendar weeks ts hpd is-holiday? is-vacation?)
-  (let* ((fill-week* (lambda (x) (fill-week x ts hpd is-holiday? is-vacation?)))
+(define (fill-calendar weeks ts hpd
+                       is-holiday?
+                       is-vacation?
+                       is-compensatory?
+                       is-extra-leave?)
+  (let* ((fill-week* (lambda (x) (fill-week x ts hpd
+                                            is-holiday?
+                                            is-vacation?
+                                            is-compensatory?
+                                            is-extra-leave?)))
          (filled (map fill-week* weeks)))
     (add-calendar-stats filled)))
 
 (define* (generate-calendar #:key
                             (time-sheet '())
                             (vacation '())
+                            (compensatory '())
+                            (extra-leave '())
                             (holidays '())
                             (span '())
                             (hours-per-day 8))
@@ -106,6 +131,14 @@ Currently, SPAN is expected to be sorted in chronological order."
     (if (null? vacation)
         (lambda (x) #f)
         (make-vacation-predicate vacation)))
+  (define is-compensatory?
+    (if (null? compensatory)
+        (lambda (x) #f)
+        (make-vacation-predicate compensatory)))
+  (define is-extra-leave?
+    (if (null? extra-leave)
+        (lambda (x) #f)
+        (make-vacation-predicate extra-leave)))
   ;; span->weeks produces something that works nicely as a calendar. The job of
   ;; fill-calendar is to pull out data for each day from time-sheet and work
   ;; out hours per day and all that fun stuff. At the end of a week, work out
@@ -115,4 +148,6 @@ Currently, SPAN is expected to be sorted in chronological order."
                  time-sheet
                  hours-per-day
                  is-holiday?
-                 is-vacation?))
+                 is-vacation?
+                 is-compensatory?
+                 is-extra-leave?))
