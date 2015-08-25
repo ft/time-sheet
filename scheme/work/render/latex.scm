@@ -390,6 +390,8 @@ identity function: (lambda (x) x).
 (define* (table-from calendar
                      #:key
                      (port (current-output-port))
+                     (comment-length #f)
+                     (subject-length #f)
                      (date-style 'english)
                      (alternating-shade #f)
                      (weekly-structure '(header days summary))
@@ -426,6 +428,20 @@ identity function: (lambda (x) x).
         ((day-month) (format #f "~a. ~a" day month))
         (else (throw 'unknown-date-style date-style)))))
 
+  (define (maybe-substring maxlen string)
+    (if maxlen
+        (let ((strlen (string-length string)))
+          (if (> strlen maxlen)
+              (strcat (substring string 0 maxlen) "...")
+              string))
+        string))
+
+  (define (chop-subject string)
+    (maybe-substring subject-length string))
+
+  (define (chop-comment string)
+    (maybe-substring comment-length string))
+
   (define (render-task task)
     (let* ((style (assq-ref styles 'tasks))
            (row-style (car style))
@@ -441,7 +457,9 @@ identity function: (lambda (x) x).
           (col-style (format #f "~a~a: ~a"
                              (if id "\\#" "")
                              (if id id (latex-escape project))
-                             (latex-escape (if id subject comment))))
+                             (latex-escape (if id
+                                               (chop-subject subject)
+                                               (chop-comment comment)))))
           #:width 3
           #:alignment "|l|")
          (multicolumn
@@ -455,7 +473,7 @@ identity function: (lambda (x) x).
           (table-columns
            (multicolumn
             (col-style (format #f "$\\quad$ ~a"
-                               (latex-escape comment)))
+                               (latex-escape (chop-comment comment))))
             #:width 3
             #:alignment "|l|")
            (multicolumn "" #:width 1 #:alignment "r|")
