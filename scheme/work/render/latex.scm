@@ -432,7 +432,7 @@ identity function: (lambda (x) x).
                                 (list 'hours (render-hours weekly-sum))
                                 (list 'balance
                                       (strcat (if (> b 0) "+" "")
-                                              (render-hours cal-balance)))))
+                                              (render-hours b)))))
                     #:width 3
                     #:alignment "|l|")
                    (multicolumn
