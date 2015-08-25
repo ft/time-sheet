@@ -266,6 +266,23 @@ identity function: (lambda (x) x).
   (vector january febuary march april may june july
           august september october november december))
 
+(define* (multicolumn text #:key (width 1) (alignment "|c|"))
+  (format #f "\\multicolumn{~a}{~a}{~a}"
+          width alignment text))
+
+(define (table-columns . lst)
+  (string-join lst " & " 'infix))
+
+(define (render-hours h)
+  (number->string (exact->inexact h)))
+
+(define* (hline port #:key (times 1))
+  (let loop ((iter times))
+    (if (zero? iter)
+        (format port "~%")
+        (begin (format port "\\hline")
+               (loop (- iter 1))))))
+
 (define* (table-from calendar
                      #:key
                      (port (current-output-port))
@@ -277,12 +294,6 @@ identity function: (lambda (x) x).
                      (pretty (pretty-items))
                      (styles (pretty-styles))
                      (alignment (pretty-alignment)))
-  (define* (hline #:key (times 1))
-    (let loop ((iter times))
-      (if (zero? iter)
-          (format port "~%")
-          (begin (format port "\\hline")
-                 (loop (- iter 1))))))
 
   (define (table-line x)
     (format port "~a \\\\~%" x))
@@ -311,9 +322,6 @@ identity function: (lambda (x) x).
         ((day-month) (format #f "~a. ~a" day month))
         (else (throw 'unknown-date-style date-style)))))
 
-  (define (render-hours h)
-    (number->string (exact->inexact h)))
-
   (define (render-task task)
     (let* ((style (assq-ref styles 'tasks))
            (row-style (car style))
@@ -337,9 +345,6 @@ identity function: (lambda (x) x).
           #:width 1
           #:alignment "r|")
          (multicolumn "" #:width 1 #:alignment "r|"))))))
-
-  (define (table-columns . lst)
-    (string-join lst " & " 'infix))
 
   (define (make-weekly-day-printer)
     (let* ((n -1)
@@ -369,15 +374,11 @@ identity function: (lambda (x) x).
                   (+ daily-sum weekly-sum))
          (when (and (memq 'tasks weekly-structure)
                     (not (null? tasks)))
-           (hline)
+           (hline port)
            (for-each render-task tasks)
-           (hline)))
+           (hline port)))
        daily-sum)
       (_ (throw 'broken-day-data day))))
-
-  (define* (multicolumn text #:key (width 1) (alignment "|c|"))
-    (format #f "\\multicolumn{~a}{~a}{~a}"
-            width alignment text))
 
   (define (key-value key value)
     (format #f "~a: ~a" (entry->string key) value))
@@ -387,7 +388,7 @@ identity function: (lambda (x) x).
                  ", " 'infix))
 
   (define (week-header week cal-sum)
-    (hline)
+    (hline port)
     (let* ((y (car (caadar week)))
            (w (assq-ref week 'week))
            (style (assq-ref styles 'header))
@@ -400,11 +401,12 @@ identity function: (lambda (x) x).
                               (multicolumn (col-style (key-value 'iso-week w))
                                            #:width 3
                                            #:alignment "l|")))))
-    (when (memq 'days weekly-structure) (hline)))
+    (when (memq 'days weekly-structure)
+      (hline port)))
 
   (define (weekly-summary meta weekly-sum cal-sum cal-balance)
     (define (meta-kv key) (list key (assq-ref meta key)))
-    (hline)
+    (hline port)
     (let* ((b (assq-ref meta 'balance))
            (style (assq-ref styles 'summary))
            (row-style (car style))
@@ -467,7 +469,7 @@ identity function: (lambda (x) x).
                    ;; the calendar generation is wrong, or both are wrong.
                    (throw 'inconsistent-weekly-sum
                           weekly-sum (assq-ref week 'hours)))
-                 (hline)
+                 (hline port)
                  (list weekly-sum balance))
                (begin
                  (loop (cdr rest) (+ weekly-sum
