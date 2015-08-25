@@ -43,7 +43,9 @@
                                               #:days-a *days-a*
                                               #:days-b *days-b*
                                               #:tasks *tasks*
-                                              #:summary *summary*))
+                                              #:summary *summary*)
+                      #:subject-length 80
+                      #:comment-length 78)
           (when with-summary?
             (summary-for data
                          #:styles (pretty-summary #:header *header*
