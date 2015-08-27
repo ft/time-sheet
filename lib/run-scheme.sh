@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
+# All rights reserved.
+#
+# Terms for redistribution and use can be found in LICENCE.
+
 GUILE_AUTO_COMPILE=1
 export GUILE_AUTO_COMPILE
 GUILE_LOAD_PATH="$PWD/scheme"

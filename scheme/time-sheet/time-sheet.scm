@@ -1,4 +1,9 @@
-(define-module (work time-sheet)
+;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
+;; All rights reserved.
+;;
+;; Terms for redistribution and use can be found in LICENCE.
+
+(define-module (time-sheet time-sheet)
   #:export (ensure-user
             merge-time-sheets))
 

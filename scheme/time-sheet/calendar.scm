@@ -1,9 +1,14 @@
-(define-module (work calendar)
+;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
+;; All rights reserved.
+;;
+;; Terms for redistribution and use can be found in LICENCE.
+
+(define-module (time-sheet calendar)
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
-  #:use-module (utils date)
-  #:use-module (work holidays)
-  #:use-module (work vacation)
+  #:use-module (time-sheet utils date)
+  #:use-module (time-sheet holidays)
+  #:use-module (time-sheet vacation)
   #:export (generate-calendar))
 
 (define (span->weeks span)

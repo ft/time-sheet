@@ -1,12 +1,14 @@
 ;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
 ;; All rights reserved.
+;;
+;; Terms for redistribution and use can be found in LICENCE.
 
-(define-module (work csv-import)
+(define-module (time-sheet csv-import)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 control)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 pretty-print)
-  #:use-module (utils date)
+  #:use-module (time-sheet utils date)
   #:export (csv->scm
             csv->s-exp
             read-timesheet

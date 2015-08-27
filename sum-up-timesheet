@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
+# All rights reserved.
+#
+# Terms for redistribution and use can be found in LICENCE.
+
 if test "$#" -lt 1; then
     printf 'usage: sum-up-timesheet <timesheet>.csv ...\n'
     exit 1

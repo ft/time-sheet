@@ -1,5 +1,7 @@
 ;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
 ;; All rights reserved.
+;;
+;; Terms for redistribution and use can be found in LICENCE.
 
 ;; This library deals with questions one might have about dates. A date in this
 ;; module's sense is a list of three items: (year month day)
@@ -19,7 +21,7 @@
 ;; The functions working with a date object do require the non-annotated
 ;; version, though.
 
-(define-module (utils date)
+(define-module (time-sheet utils date)
   #:use-module (srfi srfi-1)
   #:export (is-leap-year?
             is-week-day?

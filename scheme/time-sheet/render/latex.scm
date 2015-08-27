@@ -1,6 +1,7 @@
-;; Copyright (c) 2015 time-sheet workers, All rights reserved.
+;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
+;; All rights reserved.
 ;;
-;; Terms for redistribution and use can be found in doc/LICENCE.
+;; Terms for redistribution and use can be found in LICENCE.
 
 ;; latex.scm: LaTeX rendering module for time-sheets.
 ;;
@@ -21,8 +22,8 @@
 ;;
 ;; The rest of the code is made of by utilities and configuration helpers.
 
-(define-module (work render latex)
-  #:use-module (utils date)
+(define-module (time-sheet render latex)
+  #:use-module (time-sheet utils date)
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 regex)

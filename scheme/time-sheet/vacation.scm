@@ -1,9 +1,11 @@
 ;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
 ;; All rights reserved.
+;;
+;; Terms for redistribution and use can be found in LICENCE.
 
-(define-module (work vacation)
-  #:use-module (utils date)
-  #:use-module (work holidays)
+(define-module (time-sheet vacation)
+  #:use-module (time-sheet utils date)
+  #:use-module (time-sheet holidays)
   #:export (make-vacation-predicate
             vacation))
 

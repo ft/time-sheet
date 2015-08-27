@@ -1,5 +1,10 @@
-(define-module (work render)
-  #:use-module (work render latex)
+;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
+;; All rights reserved.
+;;
+;; Terms for redistribution and use can be found in LICENCE.
+
+(define-module (time-sheet render)
+  #:use-module (time-sheet render latex)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 optargs)
   #:export (render-calendar))

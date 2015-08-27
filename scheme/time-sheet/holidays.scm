@@ -1,9 +1,11 @@
 ;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
 ;; All rights reserved.
+;;
+;; Terms for redistribution and use can be found in LICENCE.
 
-(define-module (work holidays)
+(define-module (time-sheet holidays)
   #:use-module (srfi srfi-1)
-  #:use-module (utils date)
+  #:use-module (time-sheet utils date)
   #:export (local-holidays-for
             make-holiday-predicate
             only-weekdays))
