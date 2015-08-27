@@ -55,7 +55,6 @@ Currently, SPAN is expected to be sorted in chronological order."
       var))
 
 (define (fill-week week ts hpd
-                   is-holiday?
                    is-vacation?
                    is-compensatory?
                    is-extra-leave?)
@@ -108,12 +107,10 @@ Currently, SPAN is expected to be sorted in chronological order."
   calendar)
 
 (define (fill-calendar weeks ts hpd
-                       is-holiday?
                        is-vacation?
                        is-compensatory?
                        is-extra-leave?)
   (let* ((fill-week* (lambda (x) (fill-week x ts hpd
-                                            is-holiday?
                                             is-vacation?
                                             is-compensatory?
                                             is-extra-leave?)))
@@ -128,10 +125,6 @@ Currently, SPAN is expected to be sorted in chronological order."
                             (holidays '())
                             (span '())
                             (hours-per-day 8))
-  (define is-holiday?
-    (if (null? holidays)
-        (lambda (x) #f)
-        (make-holiday-predicate holidays)))
   (define is-vacation?
     (if (null? vacation)
         (lambda (x) #f)
@@ -152,7 +145,6 @@ Currently, SPAN is expected to be sorted in chronological order."
   (fill-calendar (span->weeks span)
                  time-sheet
                  hours-per-day
-                 is-holiday?
                  is-vacation?
                  is-compensatory?
                  is-extra-leave?))

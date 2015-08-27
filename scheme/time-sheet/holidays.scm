@@ -7,12 +7,24 @@
   #:use-module (srfi srfi-1)
   #:use-module (time-sheet utils date)
   #:export (local-holidays-for
-            make-holiday-predicate
+            is-holiday?
             only-weekdays))
 
-(define (make-holiday-predicate lst)
-  (let ((day-lst (map cdr lst)))
-    (lambda (day) (not (not (member day day-lst))))))
+(define cache '())
+(define cached-years '())
+
+(define (is-holiday? day)
+  (let ((year (car day)))
+    (unless (member year cached-years)
+      (set! cache
+        (append cache
+                (local-holidays-for year)))
+      (set! cached-years
+        (cons year cached-years)))
+    (let loop ((rest cache))
+      (cond ((null? rest) #f)
+            ((equal? day (cdar rest)) (car rest))
+            (else (loop (cdr rest)))))))
 
 (define (local-holidays-for year)
   (let ((easter-day (easter-date year)))
