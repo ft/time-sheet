@@ -27,7 +27,11 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 regex)
-  #:export (pretty-alignment
+  #:export (begin-environment
+            end-environment
+            font
+            paragraph
+            pretty-alignment
             pretty-days
             pretty-items
             pretty-months
@@ -65,6 +69,12 @@
       ((kw opts ...)
        (with-syntax (((str ...) (produce-options #'kw #'(opts ...))))
          #'(list str ...))))))
+
+(define (font fnt text)
+  (format #f "{\\~a ~a}" fnt text))
+
+(define (paragraph)
+  (format #f "\\par"))
 
 (define (display-to port . lst)
   (for-each (lambda (x) (display x port)) lst))
