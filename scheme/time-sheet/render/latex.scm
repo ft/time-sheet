@@ -316,6 +316,7 @@ identity function: (lambda (x) x).
          (hours (get 'hours))
          (balance (get 'balance))
          (days (+ wd vd hd wed cp el))
+         (weeks (/ days 7))
          (*header* (assq-ref styles 'header))
          (ls-header (car *header*))
          (cs-header (cdr *header*))
@@ -337,10 +338,12 @@ identity function: (lambda (x) x).
     (table-line (ls-header (multicolumn (cs-header (entry->string 'summary))
                                         #:width 2)))
     (hline port)
-    (table-line (ls-general (styled-columns cs-general
-                                            (entry->string 'weeks)
-                                            (number->string (exact->inexact
-                                                             (/ days 7))))))
+    (table-line (ls-general (styled-columns
+                             cs-general
+                             (entry->string 'weeks)
+                             (if (integer? weeks)
+                                 (number->string weeks 10)
+                                 (format #f "~,3f" (exact->inexact weeks))))))
     (hline port)
     (table-line (ls-general (styled-columns cs-general
                                             (entry->string 'days)
