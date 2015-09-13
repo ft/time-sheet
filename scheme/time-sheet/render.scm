@@ -9,8 +9,16 @@
   #:use-module (ice-9 optargs)
   #:export (render-calendar))
 
+(define (insert-span cal)
+  (let ((first (car cal))
+        (last (car (reverse cal))))
+    (format #f "~a -- ~a"
+            (string-join (map number->string (car (cadar first))) "-" 'infix)
+            (string-join (map number->string (car (cadar last))) "-" 'infix))))
+
 (define* (render-calendar #:key
                           (data '())
+                          (meta #f)
                           (type 'pretty-print)
                           (detailed? #f)
                           (with-summary? #f))
@@ -36,6 +44,26 @@
        (latex-document
         #:content
         (lambda ()
+          (when meta
+            (newline)
+            (display (begin-environment 'center))
+            (display (font 'Huge (format #f "Time-sheet: ~a"
+                                         (insert-span data))))
+            (display (paragraph))
+            (newline)
+            (display "\\vspace{0.25cm}")
+            (newline)
+            (display
+             (font 'Large
+                   (format #f "~a \\texttt{\\textless{}~a\\textgreater{}}"
+                           (assq-ref meta 'name)
+                           (assq-ref meta 'email))))
+            (display (paragraph))
+            (newline)
+            (display "\\vspace{0.25cm}")
+            (newline)
+            (display (end-environment 'center))
+            (newline))
           (table-from data
                       #:weekly-structure (if detailed?
                                              (cons 'tasks
