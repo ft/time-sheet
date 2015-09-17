@@ -58,7 +58,7 @@
             (newline)
             (display
              (font 'Large
-                   (format #f "~a \\texttt{\\textless{}~a\\textgreater{}}"
+                   (format #f "~a \\texttt{\\guilsinglleft{}~a\\guilsinglright{}}"
                            (assq-ref meta 'name)
                            (assq-ref meta 'email))))
             (display (paragraph))

@@ -708,6 +708,8 @@ identity function: (lambda (x) x).
               (document-class class document-options)
               (use-package 'geometry geometry)
               (use-package 'luainputenc (options utf8))
+              (use-package 'fontenc (options T1))
+              (use-package 'textcomp)
               (use-package 'longtable)
               (use-package 'color)
               (use-package 'colortbl)
