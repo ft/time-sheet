@@ -9,6 +9,72 @@
   #:use-module (ice-9 optargs)
   #:export (render-calendar))
 
+(define *i18l-title*
+  '((english . "Time-Sheet")
+    (german . "Stundenzettel")))
+
+(define *i18l-days*
+  '((english)
+    (german #:monday "Montag"
+            #:tuesday "Dienstag"
+            #:wednesday "Mittwoch"
+            #:thursday "Donnerstag"
+            #:friday "Freitag"
+            #:saturday "Samstag"
+            #:sunday "Sonntag")))
+
+(define *i18l-months*
+  '((english)
+    (german #:january Januar
+            #:febuary Februar
+            #:march "März"
+            #:april April
+            #:may Mai
+            #:june Juni
+            #:july Juli
+            #:august August
+            #:september September
+            #:october Oktober
+            #:november November
+            #:december Dezember)))
+
+(define *i18l-items*
+  '((english)
+    (german #:balance Konto
+            #:calendar-sum Kalendersumme
+            #:compensatory Ausgleich
+            #:compensatory-days Ausgleichstage
+            #:daily-sum Tagessumme
+            #:day Tag
+            #:days Tage
+            #:extra-leave Sonderurlaub
+            #:extra-leave-days Sonderurlaubstage
+            #:holiday Feiertag
+            #:holidays Feiertage
+            #:hours Stunden
+            #:iso-week Kalenderwoche
+            #:left "Übrig"
+            #:required "Benötigt"
+            #:required-hours "Benötigte Stunden"
+            #:summary Zusammenfassung
+            #:taken Genommen
+            #:type Art
+            #:vacation Urlaub
+            #:vacation-days Urlaubstage
+            #:vacation-left Resturlaub
+            #:weekend-days Wochenendtage
+            #:weekend Wochenende
+            #:weekly-sum Wochensumme
+            #:weeks Wochen
+            #:workday Arbeitstag
+            #:workdays Arbeitstage
+            #:work-hours Arbeitsstunden
+            #:year Jahr)))
+
+(define *i18l-date-style*
+  '((english . english)
+    (german . day-month)))
+
 (define (insert-span cal)
   (let ((first (car cal))
         (last (car (reverse cal))))
@@ -19,12 +85,15 @@
 (define* (render-calendar #:key
                           (data '())
                           (meta #f)
+                          (language 'english)
                           (type 'pretty-print)
                           (detailed? #f)
                           (with-summary? #f)
                           (vacation-days #f)
                           (compensatory-days #f)
                           (extra-leave-days #f))
+  (define (i18l fb lst)
+    (apply fb (assq-ref lst language)))
   (case type
     ((pretty-print)
      (pretty-print data #:width 150 #:max-expr-width 150))
@@ -50,7 +119,8 @@
           (when meta
             (newline)
             (display (begin-environment 'center))
-            (display (font 'Huge (format #f "Time-sheet: ~a"
+            (display (font 'Huge (format #f "~a: ~a"
+                                         (assq-ref *i18l-title* language)
                                          (insert-span data))))
             (display (paragraph))
             (newline)
@@ -82,7 +152,11 @@
                                               #:summary *summary*)
                       #:subject-length 80
                       #:comment-length 78
-                      #:vacation-days vacation-days)
+                      #:vacation-days vacation-days
+                      #:date-style (assq-ref *i18l-date-style* language)
+                      #:months (i18l pretty-months *i18l-months*)
+                      #:days (i18l pretty-days *i18l-days*)
+                      #:pretty (i18l pretty-items *i18l-items*))
           (when with-summary?
             (summary-for data
                          #:vacation-days vacation-days
@@ -90,5 +164,6 @@
                          #:extra-leave-days extra-leave-days
                          #:styles (pretty-summary #:header *header*
                                                   #:balance *days-b*
-                                                  #:off-days *summary*)))))))
+                                                  #:off-days *summary*)
+                         #:pretty (i18l pretty-items *i18l-items*)))))))
     (else (throw 'unknown-renderer type data))))
