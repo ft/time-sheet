@@ -240,6 +240,7 @@ identity function: (lambda (x) x).
   (type 'Type)
   (vacation 'Vacation)
   (vacation-days 'Vacation)
+  (vacation-left "Rem. Leave")
   (weekend-days "Weekend Days")
   (weekend 'Weekend)
   (weekly-sum "Weekly Sum")
@@ -413,7 +414,8 @@ identity function: (lambda (x) x).
                      (months (pretty-months))
                      (pretty (pretty-items))
                      (styles (pretty-styles))
-                     (alignment (pretty-alignment)))
+                     (alignment (pretty-alignment))
+                     (vacation-days #f))
 
   (define (table-line x)
     (format port "~a \\\\~%" x))
@@ -551,7 +553,7 @@ identity function: (lambda (x) x).
     (when (memq 'days weekly-structure)
       (hline port)))
 
-  (define (weekly-summary meta weekly-sum cal-sum cal-balance)
+  (define (weekly-summary meta weekly-sum cal-sum cal-balance vacnt)
     (define (meta-kv key) (list key (assq-ref meta key)))
     (hline port)
     (let* ((b (assq-ref meta 'balance))
@@ -566,7 +568,19 @@ identity function: (lambda (x) x).
                                                 (meta-kv 'holidays)))
                     #:width 3
                     #:alignment "|l|")
-                   (multicolumn "" #:width 2 #:alignment "r|"))))
+
+                   (if vacation-days
+                       (begin
+                         (table-columns
+                          (multicolumn
+                           (col-style (strcat (entry->string 'vacation-left)
+                                              ":"))
+                           #:alignment "r")
+                          (multicolumn (col-style
+                                        (number->string (- vacation-days
+                                                           vacnt)))
+                                       #:alignment "r|")))
+                       (multicolumn "" #:width 2 #:alignment "r|")))))
       (table-line
        (row-style (table-columns
                    (multicolumn
@@ -598,7 +612,7 @@ identity function: (lambda (x) x).
                                        (render-hours cal-balance)))
                     #:alignment "r|"))))))
 
-  (define (render-week week cal-sum cal-balance)
+  (define (render-week week cal-sum cal-balance vacnt)
     (match week
       ((days meta ...)
        (when (memq 'header weekly-structure)
@@ -606,18 +620,20 @@ identity function: (lambda (x) x).
        (let ((day-printer (make-weekly-day-printer)))
          (let loop ((rest (cdr days)) (weekly-sum 0))
            (if (null? rest)
-               (let ((balance (assq-ref meta 'balance)))
+               (let ((balance (assq-ref meta 'balance))
+                     (vd (+ vacnt (assq-ref meta 'vacation-days))))
                  (when (memq 'summary weekly-structure)
                    (weekly-summary meta weekly-sum
                                    (+ weekly-sum cal-sum)
-                                   (+ balance cal-balance)))
+                                   (+ balance cal-balance)
+                                   vd))
                  (unless (= weekly-sum (assq-ref week 'hours))
                    ;; If these are not the same, either this code is wrong, or
                    ;; the calendar generation is wrong, or both are wrong.
                    (throw 'inconsistent-weekly-sum
                           weekly-sum (assq-ref week 'hours)))
                  (hline port)
-                 (list weekly-sum balance))
+                 (list weekly-sum balance vd))
                (begin
                  (loop (cdr rest) (+ weekly-sum
                                      (render-day (car rest)
@@ -640,13 +656,14 @@ identity function: (lambda (x) x).
                             common-data)))))
 
   (display-to port (begin-environment `(longtable ,(gen-alignment))))
-  (let loop ((rest calendar) (cal-sum 0) (cal-balance 0))
+  (let loop ((rest calendar) (cal-sum 0) (cal-balance 0) (vacnt 0))
     (if (null? rest)
         cal-sum
-        (let ((cal-meta (render-week (car rest) cal-sum cal-balance)))
+        (let ((cal-meta (render-week (car rest) cal-sum cal-balance vacnt)))
           (loop (cdr rest)
                 (+ cal-sum (car cal-meta))
-                (+ cal-balance (cadr cal-meta))))))
+                (+ cal-balance (cadr cal-meta))
+                (caddr cal-meta)))))
   (display-to port (end-environment 'longtable)))
 
 (define* (latex-document #:key

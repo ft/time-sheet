@@ -21,7 +21,8 @@
                           (meta #f)
                           (type 'pretty-print)
                           (detailed? #f)
-                          (with-summary? #f))
+                          (with-summary? #f)
+                          (vacation-days #f))
   (case type
     ((pretty-print)
      (pretty-print data #:width 150 #:max-expr-width 150))
@@ -78,7 +79,8 @@
                                               #:tasks *tasks*
                                               #:summary *summary*)
                       #:subject-length 80
-                      #:comment-length 78)
+                      #:comment-length 78
+                      #:vacation-days vacation-days)
           (when with-summary?
             (summary-for data
                          #:styles (pretty-summary #:header *header*
