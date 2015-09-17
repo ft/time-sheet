@@ -234,9 +234,11 @@ identity function: (lambda (x) x).
   (holidays 'Holidays)
   (hours 'Hours)
   (iso-week 'Week)
+  (left 'Left)
   (required 'Required)
   (required-hours "Required Hours")
   (summary 'Summary)
+  (taken 'Taken)
   (type 'Type)
   (vacation 'Vacation)
   (vacation-days 'Vacation)
@@ -308,13 +310,44 @@ identity function: (lambda (x) x).
                       #:key
                       (port (current-output-port))
                       (pretty (pretty-items))
-                      (styles (pretty-summary)))
+                      (styles (pretty-summary))
+                      (vacation-days #f)
+                      (compensatory-days #f)
+                      (extra-leave-days #f))
   (define (table-line x)
     (format port "~a \\\\~%" x))
   (define (entry->string e)
     (maybe-convert (assq-ref pretty e)))
   (define (styled-columns style . lst)
     (apply table-columns (map style lst)))
+  (define type-map `((vacation vacation-days ,vacation-days)
+                     (extra extra-leave-days ,extra-leave-days)
+                     (compensatory compensatory-days ,compensatory-days)))
+  (define (vacation ls cs type cnt)
+    (let* ((i (assq-ref type-map type))
+           (sym (car i))
+           (avail (cadr i)))
+      (cond ((or (and avail (zero? avail))
+                 (and (not avail) (zero? cnt)))
+             #f)
+            (avail
+             (hline port)
+             (table-line (ls (styled-columns cs
+                                             (entry->string sym)
+                                             (number->string avail))))
+             (table-line (ls (styled-columns cs
+                                             (strcat "$\\quad$ "
+                                                     (entry->string 'taken))
+                                             (number->string cnt))))
+             (table-line (ls (styled-columns cs
+                                             (strcat "$\\quad$ "
+                                                     (entry->string 'left))
+                                             (number->string (- avail cnt))))))
+            (else
+             (hline port)
+             (table-line (ls (styled-columns cs
+                                             (entry->string sym)
+                                             (number->string cnt))))))))
   (let* ((get (lambda (x)
                 (apply + (map (lambda (y) (assq-ref y x))
                               calendar))))
@@ -363,18 +396,9 @@ identity function: (lambda (x) x).
     (table-line (ls-general (styled-columns cs-general
                                             (entry->string 'workdays)
                                             (number->string wd))))
-    (hline port)
-    (table-line (ls-off-days (styled-columns cs-off-days
-                                             (entry->string 'vacation-days)
-                                             (number->string vd))))
-    (hline port)
-    (table-line (ls-off-days (styled-columns cs-off-days
-                                             (entry->string 'compensatory-days)
-                                             (number->string cp))))
-    (hline port)
-    (table-line (ls-off-days (styled-columns cs-off-days
-                                             (entry->string 'extra-leave-days)
-                                             (number->string el))))
+    (vacation ls-off-days cs-off-days 'vacation vd)
+    (vacation ls-off-days cs-off-days 'compensatory cp)
+    (vacation ls-off-days cs-off-days 'extra el)
     (hline port)
     (table-line (ls-off-days (styled-columns cs-off-days
                                              (entry->string 'holidays)

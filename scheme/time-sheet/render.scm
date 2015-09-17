@@ -22,7 +22,9 @@
                           (type 'pretty-print)
                           (detailed? #f)
                           (with-summary? #f)
-                          (vacation-days #f))
+                          (vacation-days #f)
+                          (compensatory-days #f)
+                          (extra-leave-days #f))
   (case type
     ((pretty-print)
      (pretty-print data #:width 150 #:max-expr-width 150))
@@ -83,6 +85,9 @@
                       #:vacation-days vacation-days)
           (when with-summary?
             (summary-for data
+                         #:vacation-days vacation-days
+                         #:compensatory-days compensatory-days
+                         #:extra-leave-days extra-leave-days
                          #:styles (pretty-summary #:header *header*
                                                   #:balance *days-b*
                                                   #:off-days *summary*)))))))
