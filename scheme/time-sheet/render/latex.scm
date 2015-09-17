@@ -385,12 +385,12 @@ identity function: (lambda (x) x).
                                              (number->string wed))))
     (hline port)
     (table-line (ls-hours (styled-columns cs-hours
-                                          (entry->string 'required-hours)
-                                          (render-hours (* 8 (+ wd cp))))))
-    (hline port)
-    (table-line (ls-hours (styled-columns cs-hours
                                           (entry->string 'work-hours)
                                           (render-hours hours))))
+    (hline port)
+    (table-line (ls-hours (styled-columns cs-hours
+                                          (entry->string 'required-hours)
+                                          (render-hours (* 8 (+ wd cp))))))
     (hline port)
     (table-line (ls-balance (styled-columns cs-balance
                                             (entry->string 'balance)
