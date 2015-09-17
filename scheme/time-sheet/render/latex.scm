@@ -386,7 +386,7 @@ identity function: (lambda (x) x).
     (hline port)
     (table-line (ls-hours (styled-columns cs-hours
                                           (entry->string 'required-hours)
-                                          (render-hours (* 8 wd)))))
+                                          (render-hours (* 8 (+ wd cp))))))
     (hline port)
     (table-line (ls-hours (styled-columns cs-hours
                                           (entry->string 'work-hours)
