@@ -3,19 +3,8 @@
 ;;
 ;; Terms for redistribution and use can be found in LICENCE.
 
-(define-module (time-sheet time-sheet)
-  #:export (ensure-user
-            merge-time-sheets))
-
-(define (ensure-user user data)
-  (map (lambda (x)
-         (let ((this-user (assq-ref x 'person)))
-           (cond ((not this-user)
-                  (throw 'missing-user-name x))
-                 ((not (string=? user this-user))
-                  (throw 'wrong-user user x))
-                 (else x))))
-       data))
+(define-module (time-sheet merge)
+  #:export (merge-time-sheets))
 
 (define (id< a b)
   (< (assq-ref a 'id)
