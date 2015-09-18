@@ -1,0 +1,29 @@
+--------------------------------------
+  Time-Sheet management for Schemers
+--------------------------------------
+
+At work, we're using Redmine to keep track of time spent on tasks, projects,
+issues, projects. All that. Naturally, I want my personal copy of time data
+from that database. It's not like I am expecting to be screwed over, but I
+want a copy all same, if just to survive Redmine bugs or burning buildings.
+
+To that end I take snapshots of my Redmine time-sheet for a week every Friday,
+just before I am about to leave. One week is a time-frame I can still tell if
+a data set is sane. I couldn't do that for a month or even a year.
+
+The export from Redmine is a csv file, that the (time-sheet csv-import) module
+of this project will turn into an S-expression data set, which is much more
+verbose, featureful and robust compared to csv. The rest of the project works
+on the S-expression data rather than the csv export from Redmine.
+
+With that in place, this project provides a library that allows to write small
+scripts that produce LaTeX output, that you can process by lualatex to generate
+PDF versions of the time data.
+
+It sports a bunch of frontend modules like (time-sheet script) and (time-sheet
+render), date-math, holiday computation, file-system utilities, calendar
+generation with support for multiple different types of vacation.
+
+The system is written in GNU Guile Scheme and thus the scripts written using
+the library are as well. The library is covered by LGPL3+, of which you can
+find a copy in the LICENCE and LICENCE.GPL files in the distribution.
