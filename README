@@ -1,6 +1,10 @@
---------------------------------------
-  Time-Sheet management for Schemers
---------------------------------------
+  --------------------------------------
+    Time-Sheet management for Schemers
+  --------------------------------------
+
+
+1. Introduction
+---------------
 
 At work, we're using Redmine to keep track of time spent on tasks, projects,
 issues, projects. All that. Naturally, I want my personal copy of time data
@@ -27,3 +31,23 @@ generation with support for multiple different types of vacation.
 The system is written in GNU Guile Scheme and thus the scripts written using
 the library are as well. The library is covered by LGPL3+, of which you can
 find a copy in the LICENCE and LICENCE.GPL files in the distribution.
+
+
+2. Requirements
+---------------
+
+  - GNU Guile Version 2.x
+  - Pandoc for building the reference manual in doc/.
+
+
+3. Features
+-----------
+
+  - Importing CSV time data exports into S-Expressions
+  - Calendar generation from imported time data
+  - Vacation types: Regular leave, compensatory days, extra leave
+  - Calendar export as S-Expressions or LaTeX documents
+  - Frontend modules to increase ease of use
+
+Consult the reference manual in doc/ and the example script in examples/ for
+more detailed infomation on how the use the library.
