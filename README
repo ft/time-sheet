@@ -49,5 +49,5 @@ find a copy in the LICENCE and LICENCE.GPL files in the distribution.
   - Calendar export as S-Expressions or LaTeX documents
   - Frontend modules to increase ease of use
 
-Consult the reference manual in doc/ and the example script in examples/ for
+Consult the reference manual in doc/ and the example scripts in examples/ for
 more detailed infomation on how the use the library.
