@@ -375,7 +375,28 @@ Exported functions:
 - `vacation`
 
 ### *Function:* `(make-vacation-predicate lst)`
+
+Takes a list of vacation days (usually generated using the `vacation`
+function of this module) and returns a function that takes one argument,
+which that function then checks if it is a member of `lst`.
+
 ### *Function:* `(vacation [VACATION ENTRIES ...])`
+
+This produces a list of dates specified by `VACATION ENTRIES ...` that are
+neither weekend days nor holidays. `VACATION ENTRIES ...` works like this:
+It is a list of either dates or three expressions `#:span start stop` that
+produces lists of dates instead of having to specify each and every date
+by hand.
+
+Example:
+
+~~~~~~~ {.Scheme}
+(vacation #:span '(2014 12 19) '(2014 12 24)
+          #:span '(2014 12 25) '(2015 01 02)
+          '(2015 05 15)
+          #:span '(2015 08 10) '(2015 08 12))
+~~~~~~~
+
 
 # SEE ALSO
 
