@@ -5,3 +5,6 @@
 *.go
 \#*\#
 *~
+doc/*.3
+doc/*.html
+doc/*.pdf
