@@ -260,6 +260,14 @@ Exported function: `script-options`
 
 ## *Module:* `(time-sheet utils date)`
 
+This module deals with questions one might have about dates. A date in
+this module's sense is a list of three items: `(year month day)`
+
+The module supports conversion to and from an annotated date
+representation: `((year . 1234) (month . 12) (day . 3))`
+
+The annotated version is used in the time-sheet's data sets.
+
 Exported functions:
 
 - `is-leap-year?`
@@ -277,18 +285,61 @@ Exported functions:
 - `easter-date`
 
 ### *Function:* `(is-leap-year? year)`
+
+Determine whether or not `year` is a leap-year.
+
 ### *Function:* `(is-week-day? date)`
+
+Determine whether or not `date` is a week-day or not. This is the opposite
+of `is-week-end?`.
+
 ### *Function:* `(is-week-end? date)`
+
+Determine whether or not `date` falls on a week-end or not. This is the
+opposite of `is-week-day?`.
+
 ### *Function:* `(alist->date alist)`
+
+Convert the annotated representation of a date into a bare one.
+
 ### *Function:* `(date->alist date)`
+
+Convert the bare representation of a date into an annotated one.
+
 ### *Function:* `(date->day date)`
+
+Return a symbol describing the day of the week for `date` (for example:
+`sunday`, `tuesday` etc.).
+
 ### *Function:* `(date->week date)`
-### *Function:* `(date+ date)`
-### *Function:* `(date- date)`
+
+Return the ISO week of year number for date.
+
+### *Function:* `(date+ date n)`
+
+Add `n` days to `date` and return the resulting date.
+
+### *Function:* `(date- date n)`
+
+Subtract `n` days from `date` and return the resulting date.
+
 ### *Function:* `(date-span start stop)`
+
+Return a list of all dates between and including `start` and `stop`.
+
 ### *Function:* `(day-of-year date)`
+
+Return the day of the year for `date`.
+
 ### *Function:* `(date+woy->year date woy)`
+
+Take a `date` and a week of year value (`woy`) and produce a year value
+that fits with `woy` rather than the year contained within `date`.
+
 ### *Function:* `(easter-date year)`
+
+Return the date of Easter Sunday for `year`.
+
 
 ## *Module:* `(time-sheet utils file)`
 
