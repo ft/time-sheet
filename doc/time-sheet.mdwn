@@ -27,11 +27,293 @@ time-sheet - Framework for maintaining work time data
 
 # DESCRIPTION
 
+The *time-sheet* library offers ways to generate week by week time tables
+from a database of files containing S-Expressions of daily time keeping
+date for tasks, projects, issues and the like.
+
+The S-Expressions may be produced in any way imaginable, as long as the
+required set of key/value pairs are filled in (see *DATA SETS* below). The
+library does provide an importer for CSV files as produced by the time
+sheet export feature of the Redmine project tracker.
+
+
+# DATA SETS
+
+A data set for the library to use is an association list that describes
+the time spent on a given task. The required information provided here is:
+
+- `id`: which has to be a unique integer across the database identifying
+  the data set
+- `date`: which specifies the day the time was spent
+- `hours`: which is a number specifying the amount of time spent in the
+  data set in hours.
+
+Additionally, the following data is considered by at least one of the
+renderers or one of the utility functions:
+
+- `person`: The name of the person who performed the task.
+- `project`: The name of the project the task was part of.
+- `ticket-id`: A ticket number associated the the time spent.
+- `ticket-subject`: The subject line associated with `ticket-id`.
+- `comment`: A comment string describing how the time was spent.
+
+Other keys are allowed but are currently ignored.
+
+A complete data-set from a Redmine CSV export might look like this:
+
+~~~~~~~ {.Scheme}
+((id . 78893)
+ (date (year . 2015) (month . 9) (day . 4))
+ (person . "Joseph Donald Veloper")
+ (activity . "Development")
+ (project . "Foobar Oscilloscope Frontend V23R42")
+ (ticket-id . 23666)
+ (ticket-subject . "Find bandwith reducing reason")
+ (comment . "Schematic and PCB review")
+ (time . 3/2))
+~~~~~~~
+
+A file that is part of *time-sheet*'s data base contains *one* list of one
+or more of these data sets. These kind of files can conveniently be loaded
+into an application using the ‘`read-file`’ function from the `(time-sheet
+utils file)` module.
+
 
 # API
 
+The library works on databases made up of lists of data sets as described
+in the *DATA SETS* section above. The `(time-sheet csv-import)` module
+provides a convinient way to turn CSV data sources into such expressions.
+
+This section describes the public API of the modules that make up the
+library. Any functionality not described herein are not part of the publib
+API and therefore subject to change without further notice.
+
+
+## *Module:* `(time-sheet calendar)`
+
+Exported function: *generate-calender*
+
+### *Function:* `(generate-calendar [KEYWORD/VALUE PAIR ...])`
+
+This function's objective is to turn a list of data-sets into a week by
+week calendar representation. Its API uses keyword/value pairs to pass
+arguments into the function. Supported keywords:
+
+- `#:time-sheet`: A list of data-sets representing the data the function
+  will work on. (Default: Empty list)
+- `#:span`: A list of days, the calendar shall be generated for. This does
+  not have to be the same span that is covered in `#:time-sheet`.
+  (Default: Empty List)
+- `#:vacation`: A list of days considered vacation days. (Default: Empty
+  List)
+- `#:compansatory`: A list of days considered compensatory days. (Default:
+  Empty List)
+- `#:extra-leave`: A list of days considered extra leave days. (Default:
+  Empty List)
+- `#:hours-per-day`: An integer specifiying the required number of work
+  hours per day. (Default: 8)
+
+The return value of the function is a list of weeks of days of tasks, plus
+some meta information per week derived from the data within that and the
+preceding weeks. This value is suitable to be passed into rendering
+functions described later on.
+
+
+## *Module:* `(time-sheet csv-import)`
+
+Exported functions:
+
+- `csv->scm`
+- `csv->s-exp`
+- `read-timesheet`
+- `timesheet->alist`
+- `timesheet->sorted-alist`
+
+### *Function:* `(csv->scm file-or-port [#:sort? BOOLEAN])`
+
+`csv->scm` takes either a file-name or an open input port in
+`file-or-port`, expects to be able to read CSV data from it and produces a
+list of data sets read from the file as its return value.
+
+If `#:sort?` is false, the order of the data sets in the returned list is
+unspecified. The default it true, which means the list is sorted by the
+data sets' `id` entries.
+
+### *Function:* `(csv->s-exp file-or-port [#:sort? BOOLEAN])`
+
+This function is like `csv->scm`, but instead of returning its list of
+data sets, it pretty-prints it to stdout.
+
+### *Function:* `(read-timesheet port)`
+
+This is the low-level CSV reader function. It reads CSV lines from `port`
+and returns the data contained therein as a list.
+
+### *Function:* `(timesheet->alist data)`
+
+This takes data as returned be `read-timesheet` and uses the data from the
+first line of the CSV to produce association lists of the other lines'
+data.
+
+The function uses knowledge of the data exported from the Redmine project
+tracker to bring the values listed into optimal shape.
+
+### *Function:* `(timesheet->sorted-alist data)`
+
+Thisis like `timesheet->alist` and in addition sorts the returned list of
+data sets by their `id` entries.
+
+
+## *Module:* `(time-sheet holidays)`
+
+Exported functions:
+
+- `local-holidays-for`
+- `is-holiday?`
+
+### *Function:* `(local-holidays-for year)`
+
+Produce a list of holidays for a given year.
+
+### *Function:* `(is-holiday? day)`
+
+Takes a day — as in the sense of the (time-sheet utils date) module — and
+determines if it is a holiday or not. It returns a boolean value
+accordingly.
+
+
+## *Module:* `(time-sheet inspect)`
+
+Exported function: `ensure-user`
+
+### *Function:* `(ensure-user user data)`
+
+Scan `data` for its data sets' ‘person’ entries and make sure each and
+every one matches the string `user`.
+
+The function throws `missing-user-name` if a data set is missing the
+‘person’ entry and it throws the `wrong-user` exception if the ‘person’
+entry of a data set did not match `user`.
+
+
+## *Module:* `(time-sheet merge)`
+
+Exported function: `merge-time-sheets`
+
+### *Function:* `(merge-time-sheets lst)`
+
+Takes a list of lists of data sets and merges them into one list of data
+sets.
+
+The function throws `duplicate-id` if it finds that the `id` entries of
+the data sets would not be unique.
+
+
+## *Module:* `(time-sheet render)`
+
+Exported function: `render-calendar`
+
+### *Function:* `(render-calendar [KEYWORD/VALUE PAIR ...])`
+
+
+## *Module:* `(time-sheet render latex)`
+
+Exported functions:
+
+- `begin-environment`
+- `end-environment`
+- `font`
+- `paragraph`
+- `pretty-alignment`
+- `pretty-days`
+- `pretty-items`
+- `pretty-months`
+- `pretty-styles`
+- `pretty-summary`
+- `latex-document`
+- `line-style`
+- `summary-for`
+- `table-from`
+
+### *Function:* `(begin-environment env)`
+### *Function:* `(end-environment env)`
+### *Function:* `(font fnt text)`
+### *Function:* `(paragraph)`
+### *Function:* `(pretty-alignment [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(pretty-days [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(pretty-items [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(pretty-months [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(pretty-styles [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(pretty-summary [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(latex-document [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(line-style [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(summary-for calendar [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(table-from calendar [KEYWORD/VALUE PAIR ...])`
+
+## *Module:* `(time-sheet script)`
+
+Exported function: `script-options`
+
+### *Function:* `(script-options cmdline)`
+
+
+## *Module:* `(time-sheet utils date)`
+
+Exported functions:
+
+- `is-leap-year?`
+- `is-week-day?`
+- `is-week-end?`
+- `alist->date`
+- `date->alist`
+- `date->day`
+- `date->week`
+- `date+`
+- `date-`
+- `date-span`
+- `day-of-year`
+- `date+woy->year`
+- `easter-date`
+
+### *Function:* `(is-leap-year? year)`
+### *Function:* `(is-week-day? date)`
+### *Function:* `(is-week-end? date)`
+### *Function:* `(alist->date alist)`
+### *Function:* `(date->alist date)`
+### *Function:* `(date->day date)`
+### *Function:* `(date->week date)`
+### *Function:* `(date+ date)`
+### *Function:* `(date- date)`
+### *Function:* `(date-span start stop)`
+### *Function:* `(day-of-year date)`
+### *Function:* `(date+woy->year date woy)`
+### *Function:* `(easter-date year)`
+
+## *Module:* `(time-sheet utils file)`
+
+Exported functions:
+
+- `match-files`
+- `read-file`
+
+### *Function:* `(match-files [KEYWORD/VALUE PAIR ...])`
+### *Function:* `(read-file file)`
+
+
+## *Module:* `(time-sheet vacation)`
+
+Exported functions:
+
+- `make-vacation-predicate`
+- `vacation`
+
+### *Function:* `(make-vacation-predicate lst)`
+### *Function:* `(vacation [VACATION ENTRIES ...])`
 
 # SEE ALSO
+
+The *Guile Reference Manual*; the *Redmine User's Guide*.
 
 
 # AUTHOR
@@ -44,16 +326,16 @@ Frank Terbeck `‹ft@bewatermyfriend.org›`
 Copyright (c) 2015 Frank Terbeck `‹ft@bewatermyfriend.org›`, All rights
 reserved.
 
-This library is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free
-Software Foundation; either version 3 of the License, or (at your option) any
-later version.
+This library is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 3 of the License, or (at your
+option) any later version.
 
-This library is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-details.
+This library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+License for more details.
 
-You should have received a copy of the GNU Lesser General Public License along
-with this library; if not, write to the Free Software Foundation, Inc., 51
-Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation,
+Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
