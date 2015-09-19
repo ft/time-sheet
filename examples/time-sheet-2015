@@ -1,0 +1,151 @@
+;; -*- scheme -*-
+
+;; First and foremost, load all modules, that we are going to use
+;; in this example. The comments behind the individual modules
+;; give an example of the functionality imported by the module.
+
+(use-modules (time-sheet utils date)   ; span
+             (time-sheet utils file)   ; match-files
+             (time-sheet calendar)     ; generate-calendar
+             (time-sheet inspect)      ; ensure-user
+             (time-sheet merge)        ; merge-time-sheets
+             (time-sheet render)       ; render-calendar
+             (time-sheet script)       ; script-options
+             (time-sheet vacation))    ; vacation
+
+;; Load locale setup; this is useful if the time sheets contain
+;; utf-8 data, in which case the locale should better be setup to
+;; handle it.
+
+(setlocale LC_ALL "")
+
+;; Process command-line arguments early. This is done by the
+;; script-options utility from the (time-sheet script) module.
+;; This module allows to write many scripts that behave in a
+;; consistent manner, which may be a good idea if you are
+;; planning to write one script per year, which is what the
+;; author does. The data in *cfg* may be used to extract
+;; configuration data to — for example — change the behaviour
+;; of the ‘render-calendar’ function
+
+(define *cfg* (script-options (command-line)))
+
+;; Some information about ourself. If this is handed as the
+;; #:meta value to ‘render-calendar’, this causes the function
+;; to render a title in front of the time tables. See below.
+
+(define *meta*
+  '((name . "Joseph Donald Veloper")
+    (email . "jdv@where-ever-corp.tld")))
+
+;; State how many leave days are available to us. In this example
+;; the (+ 5 30) sum is used to emphasise, that 5 days of leave
+;; were carried over from the previous year.
+
+(define *available-vacation-count* (+ 5 30))
+(define *available-compensatory-count* 3)
+(define *available-extra-leave-count* 1)
+
+;; This is how to specify when leave days where actually taken.
+;; You may use single days or specify spans of multiple days
+;; using the #:span keyword. The ‘vacation’ function automatically
+;; figures out if official holidays or week-ends are part of the
+;; days listed and returns a list of days that actually require
+;; leave to be consumed. This way, you don't have to manually
+;; track this data.
+
+(define *vacation*
+  (vacation #:span '(2014 12 19) '(2014 12 24)
+            '(2015 05 15)))
+
+(define *compensatory*
+  (vacation #:span '(2015 03 27) '(2015 03 29)))
+
+(define *extra-leave*
+  (vacation '(2015 04 12)))
+
+;; This specifies the span of days, that we'd like to generate
+;; a calendar for.
+
+(define *span* (date-span '(2014 11 10) '(2015 09 04)))
+
+;; Now it's time to load the actual data from the S-Expression
+;; files that where imported using the csv importer module of
+;; the library.
+;;
+;; Personally, I am using the following directory structure to
+;; organise my time data:
+;;
+;;  +--: work
+;;     |
+;;     +--: 2015     One directory per year where scripts such
+;;     |             as this live.
+;;     |
+;;     +--: data     This is the place for S-Expression files
+;;     |  |          to be stored. I am sorting these into
+;;     |  +--: 2014  sub-directories based on the given year.
+;;     |  +--: 2015  This eases loading just parts of the
+;;     |             database.
+;;     |
+;;     +--: sources  Finally, for completeness, this is a directory
+;;                   I use to store the original CSV exports from
+;;                   Redmine, just in case I might need them. A
+;;                   script like this does not use CSV data but
+;;                   S-Expression files instead.
+;;
+;; That means to generate a calender for the span that was
+;; specified earlier, data from 2014 and 2015 is required. This
+;; ‘match-files’ call produces a list of files matching that
+;; criterion.
+
+(define *time-sheets* (match-files #:directories '("../data/2014"
+                                                   "../data/2015")
+                                   #:regexp "\\.scm$"))
+
+;; Now read the data from the list of S-Expression files. Then merge
+;; the time data into a single list. This makes sure the "id" field
+;; from the data base is unique across all entries, which ensures
+;; no data was entered more than once.
+;;
+;; Finally use the ‘ensure-user’ function to make sure, the data
+;; used belongs to the person named in the *meta* structure earlier
+;; in this script.
+
+(define *time-data*
+  (ensure-user (assq-ref *meta* 'name)
+               (merge-time-sheets (map read-file *time-sheets*))))
+
+;; Now take that data and produce calendar data from it, that sorts
+;; everything neatly into a week-by-week structure, that also adds
+;; statistics to each week.
+
+(define *calendar*
+  (generate-calendar #:span *span*
+                     #:time-sheet *time-data*
+                     #:vacation *vacation*
+                     #:compensatory *compensatory*
+                     #:extra-leave *extra-leave*))
+
+;; Finally, run the rendering front end. For full control one might
+;; want to directly access the API of (time-sheet render latex) instead
+;; to build a private front-end instead.
+;;
+;; This however provides a pretty simple way to render the calendar
+;; data and also uses the data from *cfg* to perform run-time
+;; configuration of the script:
+;;
+;;     time-sheet-2015 --language german
+;;     time-sheet-2015 --type pp
+;;     time-sheet-2015 --mode detailed
+;;
+;; This also marks the end of our little guided tour. Until next time!
+
+(render-calendar #:type (assq-ref *cfg* 'type)
+                 #:data *calendar*
+                 #:meta *meta*
+                 #:with-summary? #t
+                 #:language (assq-ref *cfg* 'language)
+                 #:detailed? (assq-ref *cfg* 'detailed?)
+                 #:vacation-days *available-vacation-count*
+                 #:compensatory-days *available-compensatory-count*
+                 #:extra-leave-days *available-extra-leave-count*)

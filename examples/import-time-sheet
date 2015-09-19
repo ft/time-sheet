@@ -1,0 +1,10 @@
+;; -*- scheme -*-
+
+;; This is a simple script that reads CSV exports from Redmine
+;; via stdin and produces according S-Expressions in stdout.
+;; Something along these lines may be used to import CSV data
+;; into the data format for use with the library.
+
+(use-modules (time-sheet csv-import))
+(setlocale LC_ALL "")
+(csv->s-exp (current-input-port))
