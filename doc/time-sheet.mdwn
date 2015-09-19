@@ -349,7 +349,22 @@ Exported functions:
 - `read-file`
 
 ### *Function:* `(match-files [KEYWORD/VALUE PAIR ...])`
+
+Produce a list of file names matching a regular expression pattern within
+one or more directories. The function uses keyword/value pairs to pass its
+arguments in:
+
+- `#:regexp`: The regular expression to match against available file
+  names. The function uses exteded regular expressions. (Default: `"."` —
+  which matches every file)
+- `#:directory`: The directory to scan for files. (Default: `"."`)
+- `#:directories`: If non-empty, this takes precedence over `#:directory`.
+  It allows the function to match files in multiple directories. (Default:
+  Empty list)
+
 ### *Function:* `(read-file file)`
+
+Uses Guile's Scheme `read` function on `file` and returns the result.
 
 
 ## *Module:* `(time-sheet vacation)`
