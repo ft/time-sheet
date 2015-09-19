@@ -5,8 +5,23 @@ time-sheet - Framework for maintaining work time data
 # SYNOPSIS
 
 ~~~~~~~ {.Scheme}
-(use-modules (time-sheet utils date)
+;; These are all modules the library provides. ‘script’
+;; and ‘render’ are front-end modules for easily writing
+;; multiple similar scripts based on the library.
+(use-modules (time-sheet csv-import)
+             (time-sheet calendar)
+             (time-sheet holidays)
+             (time-sheet vacation)
+             (time-sheet inspect)
+             (time-sheet merge)
+             (time-sheet script)
+             (time-sheet render)
+             (time-sheet render latex)
+             (time-sheet utils date)
              (time-sheet utils file))
+;; ...
+;; See the individual documentation for details about
+;; the modules' API and features.
 ~~~~~~~
 
 
