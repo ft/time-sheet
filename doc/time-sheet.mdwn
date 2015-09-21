@@ -451,11 +451,34 @@ number of keyword/value pairs in addition to that:
 The function will generate a latex table from `calendar` and output it to
 `#:port`.
 
+
 ## *Module:* `(time-sheet script)`
+
+The `(time-sheet script)` module allows multiple scripts using the library to
+adhere to the same calling conventions. Supported arguments:
+
+- `--help`, `-h`: Print a help message.
+- `--mode MODE`, `-m MODE`: Choose a generation mode: `compact` (default),
+  `detailed`, `complete`.
+- `--lang LANG`, `-l LANG`: Choose a language to use with the generated
+  document: `english` (default), `german`
+- `--type TYPE`, `-t TYPE`: Specify a type of document that will be generated:
+  `latex` (default), `pp` (using Guile's pretty-printer).
 
 Exported function: `script-options`
 
+
 ### *Function:* `(script-options cmdline)`
+
+This function takes a list that represents a script calling command line (the
+`command-line` function's return value will do nicely) and returns an
+association list that maps values from the command line to keys that may be
+used to configure the `render-calendar` function from the `(time-sheet render)`
+module:
+
+- `detailed?`: Based on `--mode`; suitable to configure `#:detailed?`.
+- `language`: Based on `--lang`; suitable to configure `#:language`.
+- `type`: Based on `--type`; suitable to configure `#:type`.
 
 
 ## *Module:* `(time-sheet utils date)`
