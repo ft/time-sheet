@@ -219,6 +219,8 @@ Exported function: `render-calendar`
 
 ## *Module:* `(time-sheet render latex)`
 
+This is the LaTeX markup rendering module.
+
 Exported functions:
 
 - `begin-environment`
@@ -236,20 +238,218 @@ Exported functions:
 - `summary-for`
 - `table-from`
 
+The `pretty-*` functions can be used to customise the look of the output
+of the `summary-for` and the `table-from` functions. The `(time-sheet
+render)` module uses them to implement most of its features, including its
+i18l framework.
+
+The way they work is to return a value as required by one of the high-level
+functions, by looking at at set of keyword/value arguments, each of which has a
+sensible default value. For example, the `pretty-months` function produces a
+value for use with the `#:months` arguments of the `table-from` function. So,
+`(pretty-month)` returns all the complete default value for the `#:months`
+argument.
+
+This enables the user to change just a few of the values instead of every
+single one: `(pretty-months #:july 'Halfwaythere)`
+
 ### *Function:* `(begin-environment env)`
+
+Return a string that starts the LaTeX environment `env`.
+
 ### *Function:* `(end-environment env)`
+
+Return a string that ends the LaTeX environment `env`.
+
 ### *Function:* `(font fnt text)`
+
+Return the string `text` embedded in code that makes it being set in the
+`fnt` font.
+
 ### *Function:* `(paragraph)`
+
+Return a string that ends a LaTeX paragraph.
+
 ### *Function:* `(pretty-alignment [KEYWORD/VALUE PAIR ...])`
+
+Generates a value suitable for the `#:alignment` keyword argument of the
+`table-from` function.
+
+Supported keywords: `#:date`, `#:day`, `#:type`, `#:daily-sum`, `#:weekly-sum`.
+
+Please refer to the source code in `time-sheet/render/latex.scm` for details
+about the default values for the keyword arguments.
+
 ### *Function:* `(pretty-days [KEYWORD/VALUE PAIR ...])`
+
+Generates a value suitable for the `#:days` keyword argument of the
+`table-from` function.
+
+Supported keywords: `#:monday`, `#:tuesday`, `#:wednesday`, `#:thursday`,
+`#:friday`, `#:saturday`, `#:sunday`.
+
+Please refer to the source code in `time-sheet/render/latex.scm` for details
+about the default values for the keyword arguments.
+
 ### *Function:* `(pretty-items [KEYWORD/VALUE PAIR ...])`
+
+Generates a value suitable for the `#:pretty` keyword argument of the
+`summary-for` and `table-from` functions.
+
+Supported keywords: `#:balance`, `#:calendar-sum`, `#:compensatory`,
+`#:compensatory-days`, `#:daily-sum`, `#:day`, `#:days`, `#:extra-leave`,
+`#:extra-leave-days`, `#:holiday`, `#:holidays`, `#:hours`, `#:iso-week`,
+`#:left`, `#:required`, `#:required-hours`, `#:summary`, `#:taken`, `#:type`,
+`#:vacation`, `#:vacation-days`, `#:vacation-left`, `#:weekend-days`,
+`#:weekend`, `#:weekly-sum`, `#:weeks`, `#:workday`, `#:workdays`,
+`#:work-hours`, `#:year`.
+
+Please refer to the source code in `time-sheet/render/latex.scm` for details
+about the default values for the keyword arguments.
+
 ### *Function:* `(pretty-months [KEYWORD/VALUE PAIR ...])`
+
+Generates a value suitable for the `#:months` keyword argument of the
+`table-from` function.
+
+Supported keywords: `#:january`, `#:febuary`, `#:march`, `#:april`, `#:may`,
+`#:june`, `#:july`, `#:august`, `#:september`, `#:october`, `#:november`,
+`#:december`.
+
+Please refer to the source code in `time-sheet/render/latex.scm` for details
+about the default values for the keyword arguments.
+
 ### *Function:* `(pretty-styles [KEYWORD/VALUE PAIR ...])`
+
+Generates a value suitable for the `#:styles` keyword argument of the
+`table-from` function.
+
+Supported keywords: `#:header`, `#:days-a`, `#:days-b`, `#:tasks`, `#:summary`.
+
+The values for these keywords need to be return values from the `line-style`
+function.
+
+Please refer to the source code in `time-sheet/render/latex.scm` for details
+about the default values for the keyword arguments.
+
 ### *Function:* `(pretty-summary [KEYWORD/VALUE PAIR ...])`
+
+Generates a value suitable for the `#:styles` keyword argument of the
+`summary-for` function.
+
+Supported keywords: `#:header`, `#:general`, `#:off-days`, `#:hours`,
+`#:balance`.
+
+The values for these keywords need to be return values from the `line-style`
+function.
+
+Please refer to the source code in `time-sheet/render/latex.scm` for details
+about the default values for the keyword arguments.
+
 ### *Function:* `(latex-document [KEYWORD/VALUE PAIR ...])`
+
+This function generates a latex document. It uses keyword/value pair arguments
+to control its behaviour.
+
+- `#:port`: Specifies the port the document is written to. (Default: `stdout`)
+- `#:class`: The document class to use with the document. (Default: `scrreprt`)
+- `#:content`: A thunk (lambda expression that takes no arguments) that
+  produces everything within the `document` body of the latex markup the
+  function generates. (Default: `(lambda () #f)`)
+- `#:document-options`: A set of options to the document class. (See the source
+  code about the default option list.)
+- `#:geometry`: A set of options for the geometry of the generated document.
+  (See the source code about the default option list.)
+
 ### *Function:* `(line-style [KEYWORD/VALUE PAIR ...])`
+
+Return a text-property setter.
+
+The return value is a pair of functions of one argument. That argument is
+used as a string that the functions will wrap into LaTeX code that applies
+a number of properties, which define the way the text is rendered.
+
+The first function of the pair applies properties to an entire line in a
+table, the second function applies properties to a piece of text in a
+column of a line in a table.
+
+line-style uses keyword arguments to determine the type of function it
+returns, the default values of these keywords will cause the function to
+return the identity function: (lambda (x) x).
+
+- `#:colour`: this has to be either `gray`, `rgb`, `cmyk`, `named` or any
+  colour recognised by the `color` LaTeX package.
+- `#:hue`: In case `#:colour` is `named` this defines the colour to be
+  used by name. If it is `rgb` this has to be a list of three values
+  between 0 and 1; in case of `cmyk` a list of four values between 0
+  and 1. In case of `gray` this value is ignored.
+- `#:intensity`: With `#:colour` set to `named` of `gray` this defines the
+  intensity of the colour.
+- `#:text-colour`:  Like `#:colour` but for text.
+- `#:text-hue`:  Like `#:hue` but for text.
+- `#:text-intensity`:  Like `#:intensity` but for text.
+- `#:size`: Defines the font size for the text. This may be an integer or
+  a symbol that specifies one of LaTeX's default font sizes (like Huge,
+  tiny or scriptsize).
+- `#:size-unit`: The unit used for `#:size` (Default: `pt`)
+- `#:line-space`: Defines the line-space for the text.
+- `#:line-space-unit`: The unit used for `#:line-space` (Default: `em`)
+
 ### *Function:* `(summary-for calendar [KEYWORD/VALUE PAIR ...])`
+
+This function produces a summary table of data contained within
+`calendar`. In addition it uses keyword/value pairs as arguments:
+
+- `#:port`: A port where the function will be writing the generated LaTeX
+  markup to. (Default: `(current-output-port)`)
+- `#:pretty`: See `pretty-items` for details. (Default: The return value of
+  `pretty-items`)
+- `#:styles`: See `pretty-styles` for details. (Default: The return value
+  of `pretty-styles`)
+- `#:vacation-days`: If defined, the number of vacation days available for
+  this calendar. (Default: `#f`)
+- `#:compensatory-days`: If defined, the number of vacation days available for
+  this calendar. (Default: `#f`)
+- `#:extra-leave-days`: If defined, the number of vacation days available for
+  this calendar. (Default: `#f`)
+
+The function will write its output to `#:port`.
+
 ### *Function:* `(table-from calendar [KEYWORD/VALUE PAIR ...])`
+
+This is the main generator (along-side summary-for, which serves a
+different purpose). It uses `calendar` as its input data and takes a
+number of keyword/value pairs in addition to that:
+
+- `#:port`: A port where the function will be writing the generated LaTeX
+  markup to. (Default: `(current-output-port)`)
+- `#:comment-length`: When this is an integer it specifies the number of
+  characters the function will render fron the ‘comment’ data of data
+  sets; if that piece of data is used at all. (Default: `#f`)
+- `#:subject-length`: When this is an integer it specifies the number of
+  characters the function will render fron the ‘subject’ data of data
+  sets; if that piece of data is used at all.  (Default: `#f`)
+- `#:date-style`: Specifies the way dates are rendered; possible values:
+  `day-month`, `english`. (Default: `english`)
+- `#:alternating-shade`: When rendering days in a table use alternating
+  shades line after line. (Default: `#f`)
+- `#:weekly-structure`: Specify which information to include in the
+  generated table. Possible members: `header`, `days`, `summary`, `tasks`,
+  `comments`. (Default: `(header days summary)`)
+- `#:days`: See `pretty-days` for details. (Default: The return value of
+  `pretty-days`)
+- `#:months`: See `pretty-months` for details. (Default: The return value of
+  `pretty-months`)
+- `#:pretty`: See `pretty-items` for details. (Default: The return value of
+  `pretty-items`)
+- `#:styles`: See `pretty-styles` for details. (Default: The return value
+  of `pretty-styles`)
+- `#:alignment`: See `pretty-alignment` for details. (Default: The return
+  value of `pretty-alignment`)
+- `#:vacation-days`: (Default: `#f`)
+
+The function will generate a latex table from `calendar` and output it to
+`#:port`.
 
 ## *Module:* `(time-sheet script)`
 
