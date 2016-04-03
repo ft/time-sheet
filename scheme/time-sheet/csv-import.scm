@@ -8,6 +8,7 @@
   #:use-module (ice-9 control)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 pretty-print)
+  #:use-module (time-sheet utils data)
   #:use-module (time-sheet utils date)
   #:export (csv->scm
             csv->s-exp
@@ -113,12 +114,6 @@ pairs instead of a list of lists with two elements in them.
 (define (string->time str)
   (inexact->exact (string->number str)))
 
-(define (string->date str)
-  (let ((data (string-split str #\-)))
-    (list (cons 'year (string->number (car data)))
-          (cons 'month (string->number (cadr data)))
-          (cons 'day (string->number (caddr data))))))
-
 (define (string->ticket-id str)
   (let ((lst (string-split str #\space)))
     (if (= (length lst) 2)
@@ -138,12 +133,6 @@ pairs instead of a list of lists with two elements in them.
     (if f
         (cons key ((cdr f) value))
         what)))
-
-(define (id< a b)
-  (< (assq-ref a 'id) (assq-ref b 'id)))
-
-(define (sort-by-id lst)
-  (sort lst id<))
 
 (define (make-zipper data)
   (let ((names (map translate-key data)))
