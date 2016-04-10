@@ -459,7 +459,7 @@ identity function: (lambda (x) x).
 
   (define (render-date date)
     (let ((day (caddr date))
-          (month (vector-ref months (- (cadr date) 1))))
+          (month (month->name (cadr date))))
       (case date-style
         ((english) (format #f "~a, ~a~a" month day (case day
                                                      ((1) "st")
