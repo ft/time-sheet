@@ -6,7 +6,10 @@
 (define-module (time-sheet utils file)
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 optargs)
-  #:export (match-files
+  #:export (is-csv?
+            is-file-type?
+            is-json?
+            match-files
             read-file
             use-file-or-port))
 
@@ -44,3 +47,15 @@
          (else (throw 'unknown-argument-type file-or-port)))
    file-or-port
    thunk))
+
+(define (is-file-type? file-name ext)
+  (let ((strlen (string-length file-name))
+        (extlen (string-length ext)))
+    (and (> strlen extlen)
+         (string-ci=? ext (substring file-name (- strlen extlen))))))
+
+(define (is-json? file)
+  (is-file-type? file ".json"))
+
+(define (is-csv? file)
+  (is-file-type? file ".csv"))

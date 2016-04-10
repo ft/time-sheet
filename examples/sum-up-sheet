@@ -4,20 +4,9 @@
 ;; them, sums up all the time data contained in them and writes back the
 ;; corresponding sum to stdout.
 
-(use-modules ((time-sheet csv-import) #:prefix csv:)
+(use-modules (time-sheet utils file)
+             ((time-sheet csv-import) #:prefix csv:)
              ((time-sheet json-import) #:prefix json:))
-
-(define (is-file-type? file-name ext)
-  (let ((strlen (string-length file-name))
-        (extlen (string-length ext)))
-    (and (> strlen extlen)
-         (string-ci=? ext (substring file-name (- strlen extlen))))))
-
-(define (is-json? file)
-  (is-file-type? file ".json"))
-
-(define (is-csv? file)
-  (is-file-type? file ".csv"))
 
 (define (maybe-convert file)
   (cond ((is-json? file) (json:json->scm file #:sort? #f))
