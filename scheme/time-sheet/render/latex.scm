@@ -24,6 +24,7 @@
 
 (define-module (time-sheet render latex)
   #:use-module (time-sheet utils date)
+  #:use-module (ice-9 format)
   #:use-module (ice-9 match)
   #:use-module (ice-9 optargs)
   #:use-module (ice-9 regex)
