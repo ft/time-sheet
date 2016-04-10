@@ -19,7 +19,7 @@
   (if (not (hash-table? x))
       x
       (hash-map->list (lambda (a b)
-                        (cons a (maybe-hm-recurse b)))
+                        (cons (string->symbol a) (maybe-hm-recurse b)))
                       x)))
 
 (define (id< a b)
