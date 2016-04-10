@@ -68,8 +68,8 @@
 (define (cb-project key value)
   (cons 'project (assq-ref value 'name)))
 
-(define (cb-user key value)
-  (cons 'user (assq-ref value 'name)))
+(define (cb-person key value)
+  (cons 'person (assq-ref value 'name)))
 
 (define (cb-issue data)
   (let ((value* (assq 'issue data)))
@@ -97,7 +97,7 @@
     (consume entity_id ,cb-entity-id)
     (consume entity_type ,cb-entity-type)
     (consume project ,cb-project)
-    (consume user ,cb-user)
+    (consume user ,cb-person)
     (consume activity ,cb-activity)
     (produce ,cb-issue)))
 
