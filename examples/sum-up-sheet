@@ -1,14 +1,33 @@
 ;; -*- scheme -*-
 
-;; This example takes a CSV export from Redmine and reads it,
-;; sums up all the time data contained in it and writes back the
+;; This example takes a number of CSV and JSON exports from Redmine and reads
+;; them, sums up all the time data contained in them and writes back the
 ;; corresponding sum to stdout.
 
-(use-modules (time-sheet csv-import))
+(use-modules ((time-sheet csv-import) #:prefix csv:)
+             ((time-sheet json-import) #:prefix json:))
+
+(define (is-file-type? file-name ext)
+  (let ((strlen (string-length file-name))
+        (extlen (string-length ext)))
+    (and (> strlen extlen)
+         (string-ci=? ext (substring file-name (- strlen extlen))))))
+
+(define (is-json? file)
+  (is-file-type? file ".json"))
+
+(define (is-csv? file)
+  (is-file-type? file ".csv"))
+
+(define (maybe-convert file)
+  (cond ((is-json? file) (json:json->scm file #:sort? #f))
+        ((is-csv? file) (csv:csv->scm file #:sort? #f))
+        ;; Fake zero time for unknown file formats...
+        (else (list (list (cons 'time 0))))))
 
 (define (statistics f)
   (apply + (map (lambda (x) (assq-ref x 'time))
-                (csv->scm f #:sort? #f))))
+                (maybe-convert f))))
 
 (format #t "~a~%" (exact->inexact (apply + (map statistics
                                                 (cdr (command-line))))))
