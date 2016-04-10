@@ -7,7 +7,8 @@
   #:use-module (ice-9 ftw)
   #:use-module (ice-9 optargs)
   #:export (match-files
-            read-file))
+            read-file
+            use-file-or-port))
 
 (define (read-file file)
   (with-input-from-file file
@@ -36,3 +37,10 @@
                         (append acc (map (lambda (x)
                                            (with-dir dir x))
                                          (scandir* dir regex-matches?)))))))))
+
+(define (use-file-or-port file-or-port thunk)
+  ((cond ((string? file-or-port) with-input-from-file)
+         ((port? file-or-port) with-input-from-port)
+         (else (throw 'unknown-argument-type file-or-port)))
+   file-or-port
+   thunk))

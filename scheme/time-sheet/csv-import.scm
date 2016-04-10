@@ -10,6 +10,7 @@
   #:use-module (ice-9 pretty-print)
   #:use-module (time-sheet utils data)
   #:use-module (time-sheet utils date)
+  #:use-module (time-sheet utils file)
   #:export (csv->scm
             csv->s-exp
             read-timesheet
@@ -146,11 +147,8 @@ pairs instead of a list of lists with two elements in them.
 
 (define* (csv->scm file-or-port #:key (sort? #t))
   ((if sort? timesheet->sorted-alist timesheet->alist)
-   ((cond ((string? file-or-port) with-input-from-file)
-          ((port? file-or-port) with-input-from-port)
-          (else (throw 'unknown-argument-type file-or-port)))
-    file-or-port
-    (lambda () (read-timesheet (current-input-port))))))
+   (use-file-or-port file-or-port (lambda ()
+                                    (read-timesheet (current-input-port))))))
 
 (define* (csv->s-exp file-or-port #:key (sort? #t))
   (pretty-print (csv->scm file-or-port #:sort? sort?)))
