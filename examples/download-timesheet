@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# Copyright (c) 2016 time-sheet workers, All rights reserved.
+# Terms for redistribution and use can be found in LICENCE.
+
+# This script is a frontend to the “redmine-rest-to-json” script, that is also
+# part of this libraries examples. It is used like this:
+#
+#    % download-timesheet [START-DATE] [END-DATE]
+#
+# The two optional date specifiers should have the following format: YYYY-MM-DD
+#
+# Additionally, they may be any string, that the system's date(1) program is
+# able to interpret, which in the case of GNU date is a lot. In particular, the
+# defaults for the optional arguments are:
+#
+#     - START-DATE: "last monday"
+#     - END-DATE: "today"
+#
+# Thus, this example expects a date(1) to be GNU date unless it is altered.
+#
+# The script produces an output file called:
+#
+#     timesheet-FROM-DATE_END-DATE.json
+#
+# ...where the FROM-DATE and END-DATE portions are converted to YYYY-MM-DD
+# format.
+#
+# The purpose of this script is to make downloading a past week's timesheet as
+# convenient as possible.
+
+maybe_date () {
+    case "$1" in
+    [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])
+        REPLY="$1"
+        ;;
+    *) REPLY="$(date --date="$1" +'%Y-%m-%d')"
+       ;;
+    esac
+}
+
+if [ -n "$1" ]; then
+    maybe_date "$1"
+    from="$REPLY"
+else
+    from="$(date --date='last monday' +'%Y-%m-%d')"
+fi
+
+if [ -n "$2" ]; then
+    maybe_date "$2"
+    to="$REPLY"
+else
+    to="$(date --date='today' +'%Y-%m-%d')"
+fi
+
+dest=timesheet-"$from"_"$to".json
+printf 'Downloading time sheet from %s to %s...\n' "$from" "$to" >&2
+printf 'Saving to: %s\n' "$dest" >&2
+exec redmine-rest-to-json -v -f "$from" -t "$to" > "$dest"

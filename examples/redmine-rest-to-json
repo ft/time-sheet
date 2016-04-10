@@ -1,0 +1,94 @@
+#!/usr/bin/perl
+
+# Copyright (c) 2016 time-sheet workers, All rights reserved.
+# Terms for redistribution and use can be found in LICENCE.
+
+# This script can be used to download time-sheets in JSON format via redmine's
+# REST API. It uses a YAML format configuration file located in “~/.gts.yaml”
+# to fetch relevant information. An example configuration file may look like
+# this:
+#
+#   api-key: 1234567890abcdeffedcba0987654321
+#   timesheet: https://foo.bar.tld/time_entries.json
+#   issues: https://foo.bar.tld/path/to/issues-dot-json
+#   ssl-ca: /etc/ssl/foo.ext
+#
+# The normal time_entries export via the REST API does not include a whole lot
+# information about the issue that the time recorded was spent on. Actually it
+# only mentions its issue ID. This script goes ahead and downloads the
+# according issue page and replaces the limited issue data with the complete
+# one. This is especially useful since the LaTeX table generator uses an
+# issue's subject in its output.
+#
+# This script accepts --from and --to options, that allow the user to limit the
+# data span for which to download the time data from the redmine server. The
+# dates need to be in "YYYY-MM-DD" format.
+#
+# Known limitations:
+#
+# The output of the JSON data via redmine's REST API is paginated and its limit
+# of datums per page is 100. This script currently assumes that this limit is
+# not reached. It will only read the first page of data.
+
+use lib "$ENV{HOME}/perl5/lib/perl5";
+
+use warnings;
+use strict;
+use English qw{ -no_match_vars };
+
+use Getopt::Long;
+use Storable;
+use YAML::AppConfig;
+use REST::Client;
+use JSON::Syck;
+
+my $verbose = 0;
+my ($from, $to, $page, $cache);
+
+my $result = GetOptions("verbose" => \$verbose,
+                        "from=s" => \$from,
+                        "to=s" => \$to);
+
+die "Broken parameters\n" unless ($result);
+
+my $cfg = YAML::AppConfig->new(file => "$ENV{HOME}/.gts.yaml");
+
+my $c = REST::Client->new();
+$c->setCa($cfg->get('ssl-ca')) if (defined $cfg->get('ssl-ca'));
+$c->setTimeout(10);
+$c->addHeader('X-Redmine-API-Key', $cfg->get("api-key"));
+
+my $url = $cfg->get("timesheet") . q{?limit=100};
+
+$url .= qq{&from=$from&to=$to} if (defined $from && defined $to);
+$url .= qq{&page=$page} if (defined $page);
+
+warn "Timesheet database page: ", $cfg->get("timesheet"), "\n" if ($verbose);
+warn "     Full timesheet URI: ", $url, "\n" if ($verbose);
+warn "                API-Key: ", $cfg->get("api-key"), "\n" if ($verbose);
+
+my $r = $c->GET($url);
+my $d = JSON::Syck::Load($r->responseContent());
+
+sub hash_eq {
+    my ($h, $n, $v) = @_;
+    return 0 if (not exists $h->{$n});
+    return 0 if ($h->{$n} ne $v);
+    return 1;
+}
+
+# Fetch issue data, to include subject strings in exports:
+ENTRY: foreach my $entry (@{ $d->{time_entries} }) {
+    next ENTRY unless (hash_eq($entry, q{entity_type}, q{Issue}));
+    my $issue = $entry->{entity_id};
+    my $uri = $cfg->get("issues") . qq{/$issue.json};
+    unless (defined $cache->{$uri}) {
+        warn " -!- Requesting data for issue $issue via $uri\n" if ($verbose);
+        my $this = $c->GET($uri);
+        my $tmp = JSON::Syck::Load($this->responseContent());
+        $cache->{$uri} = $tmp->{issue};
+    }
+    $entry->{issue} = Storable::dclone($cache->{$uri});
+}
+
+print JSON::Syck::Dump($d), qq{\n};
