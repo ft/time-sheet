@@ -712,6 +712,7 @@ identity function: (lambda (x) x).
               (use-package 'fontenc (options T1))
               (use-package 'textcomp)
               (use-package 'longtable)
+              (use-package 'graphicx)
               (use-package 'color)
               (use-package 'colortbl)
               (begin-environment 'document))
