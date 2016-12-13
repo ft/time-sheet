@@ -91,7 +91,8 @@
                           (with-summary? #f)
                           (vacation-days #f)
                           (compensatory-days #f)
-                          (extra-leave-days #f))
+                          (extra-leave-days #f)
+                          (post-hook #f))
   (define (i18l fb lst)
     (apply fb (assq-ref lst language)))
   (case type
@@ -165,5 +166,7 @@
                          #:styles (pretty-summary #:header *header*
                                                   #:balance *days-b*
                                                   #:off-days *summary*)
-                         #:pretty (i18l pretty-items *i18l-items*)))))))
+                         #:pretty (i18l pretty-items *i18l-items*)))
+          (when (thunk? post-hook)
+            (post-hook))))))
     (else (throw 'unknown-renderer type data))))
