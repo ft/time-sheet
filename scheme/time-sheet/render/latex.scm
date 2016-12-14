@@ -39,6 +39,7 @@
             pretty-styles
             pretty-summary
             latex-document
+            latex-macro-with-options
             line-style
             summary-for
             table-from))
