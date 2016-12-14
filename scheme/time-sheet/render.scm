@@ -7,6 +7,7 @@
   #:use-module (time-sheet render latex)
   #:use-module (ice-9 pretty-print)
   #:use-module (ice-9 optargs)
+  #:use-module (srfi srfi-1)
   #:export (render-calendar))
 
 (define *i18l-title*
@@ -76,11 +77,11 @@
     (german . day-month)))
 
 (define (insert-span cal)
-  (let ((first (car cal))
-        (last (car (reverse cal))))
+  (let ((start (caar (assq-ref (car cal) 'data)))
+        (stop (car (last (assq-ref (last cal) 'data)))))
     (format #f "~a -- ~a"
-            (string-join (map number->string (car (cadar first))) "-" 'infix)
-            (string-join (map number->string (car (cadar last))) "-" 'infix))))
+            (string-join (map number->string start) "-" 'infix)
+            (string-join (map number->string stop) "-" 'infix))))
 
 (define* (render-calendar #:key
                           (data '())
