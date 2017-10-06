@@ -1,0 +1,9 @@
+;; -*- scheme -*-
+
+;; This is a script similar to import-time-sheet that reads
+;; JSON exports from Redmine's REST API via stdin and produces
+;; according S-Expressions in stdout.
+
+(use-modules (time-sheet json-import))
+(setlocale LC_ALL "")
+(json->s-exp (current-input-port))
