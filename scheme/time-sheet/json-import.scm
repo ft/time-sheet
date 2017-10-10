@@ -1,4 +1,4 @@
-;; Copyright (c) 2016 time-sheet workers, All rights reserved.
+;; Copyright (c) 2016-2017 time-sheet workers, All rights reserved.
 ;;
 ;; Terms for redistribution and use can be found in LICENCE.
 

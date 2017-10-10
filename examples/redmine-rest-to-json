@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (c) 2016 time-sheet workers, All rights reserved.
+# Copyright (c) 2016-2017 time-sheet workers, All rights reserved.
 # Terms for redistribution and use can be found in LICENCE.
 
 # This script can be used to download time-sheets in JSON format via redmine's

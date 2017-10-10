@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2016 time-sheet workers, All rights reserved.
+# Copyright (c) 2016-2017 time-sheet workers, All rights reserved.
 # Terms for redistribution and use can be found in LICENCE.
 
 # This script is a frontend to the “redmine-rest-to-json” script, that is also

@@ -633,8 +633,8 @@ Frank Terbeck `‹ft@bewatermyfriend.org›`
 
 # COPYRIGHT AND LICENCE
 
-Copyright (c) 2015 Frank Terbeck `‹ft@bewatermyfriend.org›`, All rights
-reserved.
+Copyright (c) 2015-2017 Frank Terbeck `‹ft@bewatermyfriend.org›`, All
+rights reserved.
 
 This library is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by

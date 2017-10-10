@@ -1,5 +1,4 @@
-;; Copyright (c) 2015 Frank Terbeck <ft@bewatermyfriend.org>
-;; All rights reserved.
+;; Copyright (c) 2015-2017 time-sheet workers, All rights reserved.
 ;;
 ;; Terms for redistribution and use can be found in LICENCE.
 
