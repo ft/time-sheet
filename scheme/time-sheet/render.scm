@@ -49,6 +49,8 @@
             #:days Tage
             #:extra-leave Sonderurlaub
             #:extra-leave-days Sonderurlaubstage
+            #:sick-leave Krankheit
+            #:sick-leave-days Krankheitstage
             #:holiday Feiertag
             #:holidays Feiertage
             #:hours Stunden

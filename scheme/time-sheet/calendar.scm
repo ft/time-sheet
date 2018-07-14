@@ -56,7 +56,8 @@ Currently, SPAN is expected to be sorted in chronological order."
 (define (fill-week week ts hpd
                    is-vacation?
                    is-compensatory?
-                   is-extra-leave?)
+                   is-extra-leave?
+                   is-sick-leave?)
   (let loop ((rest (caddr week))
              (acc '())
              (workdays 0)
@@ -64,6 +65,7 @@ Currently, SPAN is expected to be sorted in chronological order."
              (vacation-days 0)
              (compensatory-days 0)
              (extra-leave-days 0)
+             (sick-leave-days 0)
              (weekend-days 0)
              (hours 0))
     (if (null? rest)
@@ -78,6 +80,7 @@ Currently, SPAN is expected to be sorted in chronological order."
                 (cons 'vacation-days vacation-days)
                 (cons 'compensatory-days compensatory-days)
                 (cons 'extra-leave-days extra-leave-days)
+                (cons 'sick-leave-days sick-leave-days)
                 (cons 'holidays holidays)
                 (cons 'weekend-days weekend-days)))
         (let* ((today (car rest))
@@ -85,6 +88,7 @@ Currently, SPAN is expected to be sorted in chronological order."
                            ((is-holiday? today) 'holiday)
                            ((is-compensatory? today) 'compensatory)
                            ((is-extra-leave? today) 'extra-leave)
+                           ((is-sick-leave? today) 'sick-leave)
                            ((is-week-end? today) 'weekend)
                            (else 'workday)))
                (data (filter-day today ts)))
@@ -99,6 +103,7 @@ Currently, SPAN is expected to be sorted in chronological order."
                   (increment-if-type (type 'vacation) vacation-days)
                   (increment-if-type (type 'compensatory) compensatory-days)
                   (increment-if-type (type 'extra-leave) extra-leave-days)
+                  (increment-if-type (type 'sick-leave) sick-leave-days)
                   (increment-if-type (type 'weekend) weekend-days)
                   (+ hours hours-of-day)))))))
 
@@ -108,11 +113,13 @@ Currently, SPAN is expected to be sorted in chronological order."
 (define (fill-calendar weeks ts hpd
                        is-vacation?
                        is-compensatory?
-                       is-extra-leave?)
+                       is-extra-leave?
+                       is-sick-leave?)
   (let* ((fill-week* (lambda (x) (fill-week x ts hpd
                                             is-vacation?
                                             is-compensatory?
-                                            is-extra-leave?)))
+                                            is-extra-leave?
+                                            is-sick-leave?)))
          (filled (map fill-week* weeks)))
     (add-calendar-stats filled)))
 
@@ -121,6 +128,7 @@ Currently, SPAN is expected to be sorted in chronological order."
                             (vacation '())
                             (compensatory '())
                             (extra-leave '())
+                            (sick-leave '())
                             (holidays '())
                             (span '())
                             (hours-per-day 8))
@@ -136,6 +144,10 @@ Currently, SPAN is expected to be sorted in chronological order."
     (if (null? extra-leave)
         (lambda (x) #f)
         (make-vacation-predicate extra-leave)))
+  (define is-sick-leave?
+    (if (null? sick-leave)
+        (lambda (x) #f)
+        (make-vacation-predicate sick-leave)))
   ;; span->weeks produces something that works nicely as a calendar. The job of
   ;; fill-calendar is to pull out data for each day from time-sheet and work
   ;; out hours per day and all that fun stuff. At the end of a week, work out
@@ -146,4 +158,5 @@ Currently, SPAN is expected to be sorted in chronological order."
                  hours-per-day
                  is-vacation?
                  is-compensatory?
-                 is-extra-leave?))
+                 is-extra-leave?
+                 is-sick-leave?))

@@ -231,6 +231,8 @@ identity function: (lambda (x) x).
   (days 'Days)
   (extra-leave 'Extra-Leave)
   (extra-leave-days "Extra Leave Days")
+  (sick-leave 'Sick-Leave)
+  (sick-leave-days "Sick Days")
   (holiday 'Holiday)
   (holidays 'Holidays)
   (hours 'Hours)
@@ -323,6 +325,7 @@ identity function: (lambda (x) x).
     (apply table-columns (map style lst)))
   (define type-map `((vacation vacation-days ,vacation-days)
                      (extra extra-leave-days ,extra-leave-days)
+                     (sick sick-leave-days #f)
                      (compensatory compensatory-days ,compensatory-days)))
   (define (vacation ls cs type cnt)
     (let* ((i (assq-ref type-map type))
@@ -358,6 +361,7 @@ identity function: (lambda (x) x).
          (wed (get 'weekend-days))
          (cp (get 'compensatory-days))
          (el (get 'extra-leave-days))
+         (sl (get 'sick-leave-days))
          (hours (get 'hours))
          (balance (get 'balance))
          (days (+ wd vd hd wed cp el))
@@ -400,6 +404,7 @@ identity function: (lambda (x) x).
     (vacation ls-off-days cs-off-days 'vacation vd)
     (vacation ls-off-days cs-off-days 'compensatory cp)
     (vacation ls-off-days cs-off-days 'extra el)
+    (vacation ls-off-days cs-off-days 'sick sl)
     (hline port)
     (table-line (ls-off-days (styled-columns cs-off-days
                                              (entry->string 'holidays)
@@ -610,7 +615,8 @@ identity function: (lambda (x) x).
        (row-style (table-columns
                    (multicolumn
                     (col-style (multi-key-value (meta-kv 'compensatory-days)
-                                                (meta-kv 'extra-leave-days)))
+                                                (meta-kv 'extra-leave-days)
+                                                (meta-kv 'sick-leave-days)))
                     #:width 3
                     #:alignment "|l|")
                    (multicolumn
