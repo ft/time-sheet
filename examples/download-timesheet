@@ -6,7 +6,7 @@
 # This script is a frontend to the “redmine-rest-to-json” script, that is also
 # part of this libraries examples. It is used like this:
 #
-#    % download-timesheet [START-DATE] [END-DATE]
+#    % download-timesheet [-w N YYYY] [START-DATE] [END-DATE]
 #
 # The two optional date specifiers should have the following format: YYYY-MM-DD
 #
@@ -19,6 +19,10 @@
 #
 # Thus, this example expects a date(1) to be GNU date unless it is altered.
 #
+# Optionally, you can also use the -w option, that takes an ISO week number and
+# a year, which will cause the script to download the data for all seven days
+# of the given work week:
+#
 # The script produces an output file called:
 #
 #     timesheet-FROM-DATE_END-DATE.json
@@ -28,6 +32,25 @@
 #
 # The purpose of this script is to make downloading a past week's timesheet as
 # convenient as possible.
+
+week_of () {
+    week=$1
+    year=$2
+    date_fmt='+%Y-%m-%d'
+
+    week_num_of_Jan_1=$(date -d $year-01-01 +%W)
+    week_day_of_Jan_1=$(date -d $year-01-01 +%u)
+
+    if (( week_num_of_Jan_1 )); then
+        first_Mon=$year-01-01
+    else
+        first_Mon=$year-01-$((01 + (7 - week_day_of_Jan_1 + 1) ))
+    fi
+
+    mon=$(date -d "$first_Mon +$((week - 1)) week" "$date_fmt")
+    sun=$(date -d "$first_Mon +$((week - 1)) week + 6 day" "$date_fmt")
+    REPLY="$mon:$sun"
+}
 
 maybe_date () {
     case "$1" in
@@ -40,15 +63,25 @@ maybe_date () {
 }
 
 if [ -n "$1" ]; then
-    maybe_date "$1"
-    from="$REPLY"
+    if [ "x$1" = "x-w" ]; then
+        mode=week
+    else
+        maybe_date "$1"
+        from="$REPLY"
+    fi
 else
     from="$(date --date='last monday' +'%Y-%m-%d')"
 fi
 
 if [ -n "$2" ]; then
-    maybe_date "$2"
-    to="$REPLY"
+    if [ "$mode" = "week" ]; then
+        week_of "$3" "$2"
+        from="${REPLY%%:*}"
+        to="${REPLY##*:}"
+    else
+        maybe_date "$2"
+        to="$REPLY"
+    fi
 else
     to="$(date --date='today' +'%Y-%m-%d')"
 fi

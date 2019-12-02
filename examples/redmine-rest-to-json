@@ -12,6 +12,7 @@
 #   timesheet: https://foo.bar.tld/time_entries.json
 #   issues: https://foo.bar.tld/path/to/issues-dot-json
 #   ssl-ca: /etc/ssl/foo.ext
+#   id: 123
 #
 # The normal time_entries export via the REST API does not include a whole lot
 # information about the issue that the time recorded was spent on. Actually it
@@ -43,7 +44,7 @@ use REST::Client;
 use JSON::Syck;
 
 my $verbose = 0;
-my ($from, $to, $page, $cache);
+my ($from, $to, $cache);
 
 my $result = GetOptions("verbose" => \$verbose,
                         "from=s" => \$from,
@@ -58,17 +59,51 @@ $c->setCa($cfg->get('ssl-ca')) if (defined $cfg->get('ssl-ca'));
 $c->setTimeout(10);
 $c->addHeader('X-Redmine-API-Key', $cfg->get("api-key"));
 
-my $url = $cfg->get("timesheet") . q{?limit=100};
+sub get_redmine_timesheet {
+    my (%params) = @_;
 
-$url .= qq{&from=$from&to=$to} if (defined $from && defined $to);
-$url .= qq{&page=$page} if (defined $page);
+    my $limit = 100;
+    $limit = $params{limit} if (defined $params{limit});
+    my $url = $cfg->get("timesheet") . qq{?limit=$limit};
 
-warn "Timesheet database page: ", $cfg->get("timesheet"), "\n" if ($verbose);
-warn "     Full timesheet URI: ", $url, "\n" if ($verbose);
-warn "                API-Key: ", $cfg->get("api-key"), "\n" if ($verbose);
+    $url .= qq{&from=$from&to=$to} if (defined $params{from} && defined $params{to});
+    $url .= q{&page=} . $params{page} if (defined $params{page});
+    $url .= q{&offset=} . $params{offset} if (defined $params{offset});
+    $url .= q{&user_id=} . $params{id} if (defined $params{id});
 
-my $r = $c->GET($url);
-my $d = JSON::Syck::Load($r->responseContent());
+    if ($verbose) {
+        warn "Timesheet database page: ", $cfg->get("timesheet"), "\n";
+        warn "     Full timesheet URI: ", $url, "\n" if ($verbose);
+        warn "                API-Key: ", $cfg->get("api-key"), "\n";
+    }
+
+    my $r = $c->GET($url);
+    my $d = JSON::Syck::Load($r->responseContent());
+
+    return $d;
+}
+
+# Redmine only lets us fetch a hundred time sheet entries per fetch. Luckily,
+# the ‘total_count’ value always yields the entire number of entries; this way
+# we can loop until we got them all.
+my $limit = 100;
+my $offset = 0;
+my @results;
+do {
+    $result = get_redmine_timesheet(from => $from,
+                                    to => $to,
+                                    limit => $limit,
+                                    offset => $offset,
+                                    id = $cfg->get(q{id}));
+    push @results, $result;
+    $offset += $limit;
+} while (defined $result->{total_count} && $offset <= $result->{total_count} );
+
+# Combine all ‘time_entries’ chunks into one.
+my @time;
+foreach my $part (@results) {
+    push @time, @{ $part->{time_entries} };
+}
 
 sub hash_eq {
     my ($h, $n, $v) = @_;
@@ -78,7 +113,7 @@ sub hash_eq {
 }
 
 # Fetch issue data, to include subject strings in exports:
-ENTRY: foreach my $entry (@{ $d->{time_entries} }) {
+ENTRY: foreach my $entry (@time) {
     next ENTRY unless (hash_eq($entry, q{entity_type}, q{Issue}));
     my $issue = $entry->{entity_id};
     my $uri = $cfg->get("issues") . qq{/$issue.json};
@@ -91,4 +126,12 @@ ENTRY: foreach my $entry (@{ $d->{time_entries} }) {
     $entry->{issue} = Storable::dclone($cache->{$uri});
 }
 
-print JSON::Syck::Dump($d), qq{\n};
+# Assemble a single hashref, that contains all time-sheet entries in its
+# ‘time_entries’ value.
+my $full = $results[0];
+$full->{time_entries} = \@time;
+$full->{offset} = 0;
+$full->{limit} = $full->{total_count};
+
+# Produce a JSON dump of the whole data-structure.
+print JSON::Syck::Dump($full), qq{\n};
