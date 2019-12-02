@@ -10,6 +10,7 @@
              (time-sheet inspect)      ; ensure-user
              (time-sheet merge)        ; merge-time-sheets
              (time-sheet render)       ; render-calendar
+             (time-sheet render latex) ; latex-macro-with-options
              (time-sheet script)       ; script-options
              (time-sheet vacation))    ; vacation
 
