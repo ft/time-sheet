@@ -60,6 +60,9 @@
 (define *extra-leave*
   (vacation '(2015 04 12)))
 
+(define *sick-days*
+  (vacation #:span '(2015 07 05) '(2015 07 06)))
+
 ;; This specifies the span of days, that we'd like to generate a calendar for.
 
 (define *span* (date-span '(2014 11 10) '(2015 09 04)))
@@ -114,6 +117,7 @@
 (define *calendar*
   (generate-calendar #:span *span*
                      #:time-sheet *time-data*
+                     #:sick-leave *sick-days*
                      #:vacation *vacation*
                      #:compensatory *compensatory*
                      #:extra-leave *extra-leave*))
