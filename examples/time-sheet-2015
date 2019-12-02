@@ -118,6 +118,45 @@
                      #:compensatory *compensatory*
                      #:extra-leave *extra-leave*))
 
+;; As an example extension, let us add a little code that produces a simple da-
+;; ta file  that reflects week-by-week summaries  of time that was  spent. This
+;; file can then be used in conjunction with the included hour-graph.gp gnuplot
+;; script that produces a bar graph that  visualises the data — the script pro-
+;; duces a PDF file of that plot.
+
+(define (inexact-item w e)
+  "This is a simple accessors that converts to inexact numbers. This is useful
+since gnuplot does not like rational numbers like 3/4 a lot."
+  (exact->inexact (assq-ref w e)))
+
+;; This iterates over the weeks in a calendar: (for-each (λ (w) ...) calendar)
+;;
+;; Then for each  week it produces a  like in hours.txt that  reflects the data
+;; listed below. Your build-system should call the hour-graph.gp gnuplot script
+;; on this file in  order to produce the desired image. This  has to happen be-
+;; fore a LaTeX processor (like pdflatex or lualatex) is called to create a PDF
+;; of the computed time-sheet.
+(with-output-to-file "hours.txt"
+  (lambda ()
+    (for-each (lambda (week)
+                (format #t "~a.~a ~a ~a ~a ~a~%"
+                        (assq-ref week 'year)
+                        (assq-ref week 'week)
+                        (assq-ref week 'workdays)
+                        (inexact-item week 'required)
+                        (inexact-item week 'hours)
+                        (inexact-item week 'balance)))
+              *calendar*)))
+
+;; To connect  this procedure  to the  time-sheet's LaTeX  renderer, here  is a
+;; function suitable for  use in a #:post-hook of render-calendar.  It adds the
+;; appropriate code to the generated LaTeX  to include the image created by the
+;; hour-graph.gp script.
+(define (scaled-image image)
+  (display (latex-macro-with-options 'includegraphics
+                                     '(("width=\\textwidth{}"))
+                                     image)))
+
 ;; Finally, run  the rendering front  end. For full  control one might  want to
 ;; directly access  the API  of (time-sheet  render latex)  instead to  build a
 ;; private front-end instead.
@@ -140,4 +179,5 @@
                  #:detailed? (assq-ref *cfg* 'detailed?)
                  #:vacation-days *available-vacation-count*
                  #:compensatory-days *available-compensatory-count*
-                 #:extra-leave-days *available-extra-leave-count*)
+                 #:extra-leave-days *available-extra-leave-count*
+                 #:post-hook (lambda () (scaled-image "hours.pdf")))
