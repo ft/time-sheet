@@ -35,6 +35,10 @@
   '((name . "Joseph Donald Veloper")
     (email . "jdv@where-ever-corp.tld")))
 
+;; This specifies the span of days, that we'd like to generate a calendar for.
+
+(define *span* (date-span '(2014 11 10) '(2015 09 04)))
+
 ;; State how many leave days are available to  us. In this example the (+ 5 30)
 ;; sum is used  to emphasise, that 5  days of leave were carried  over from the
 ;; previous year.
@@ -62,10 +66,6 @@
 
 (define *sick-days*
   (vacation #:span '(2015 07 05) '(2015 07 06)))
-
-;; This specifies the span of days, that we'd like to generate a calendar for.
-
-(define *span* (date-span '(2014 11 10) '(2015 09 04)))
 
 ;; Now it's time to load the actual data from the S-Expression files that where
 ;; imported using the csv importer module of the library.
