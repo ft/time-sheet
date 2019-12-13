@@ -21,7 +21,9 @@
 ;; version, though.
 
 (define-module (time-sheet utils date)
+  #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-19)
   #:export (is-leap-year?
             is-week-day?
             is-week-end?
@@ -34,7 +36,8 @@
             date-span
             day-of-year
             date+woy->year
-            easter-date))
+            easter-date
+            today))
 
 (define (date->alist d)
   "Convert a non-annotated date to an annotated one.
@@ -240,3 +243,16 @@ Such that the year matches the WEEK-OF-YEAR."
     (cond ((equal? cur start)
            (cons start acc))
           (else (loop (date- cur 1) (cons (list-copy cur) acc))))))
+
+(define* (today #:optional (tz-offset #f))
+  "Return today as a date triple.
+
+The ‘tz-offset’ argument is the offset with respect to Greenwich Standard Time
+in seconds. If the argument is not given, the function uses the system's time
+zone."
+  (let ((day (if tz-offset
+                 (current-date tz-offset)
+                 (current-date))))
+    (list (date-year day)
+          (date-month day)
+          (date-day day))))
