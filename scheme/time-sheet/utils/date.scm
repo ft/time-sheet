@@ -21,6 +21,7 @@
 ;; version, though.
 
 (define-module (time-sheet utils date)
+  #:use-module (ice-9 control)
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-19)
@@ -33,6 +34,9 @@
             date->week
             date+
             date-
+            date=
+            date<
+            date>
             date-span
             day-of-year
             date+woy->year
@@ -256,3 +260,23 @@ zone."
     (list (date-year day)
           (date-month day)
           (date-day day))))
+
+(define (date= a b)
+  "Return #t if two dates are the same."
+  (equal? a b))
+
+(define (date< a b)
+  "Return #f if the date ‘a’ lies before the date ‘b’."
+  (call/ec (lambda (return)
+             (let loop ((rest (zip a b)))
+               (if (null? rest) #f
+                   (let ((aa (caar rest))
+                         (bb (cadar rest)))
+                     (cond ((< aa bb) (return #t))
+                           ((> aa bb) (return #f))
+                           (else (loop (cdr rest))))))))))
+
+(define (date> a b)
+  "Return #f if the date ‘a’ lies after the date ‘b’."
+  (not (or (date= a b)
+           (date< a b))))
