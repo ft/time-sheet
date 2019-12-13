@@ -24,7 +24,7 @@
   #:use-module (ice-9 control)
   #:use-module (ice-9 optargs)
   #:use-module (srfi srfi-1)
-  #:use-module (srfi srfi-19)
+  #:use-module ((srfi srfi-19) #:prefix srfi:)
   #:export (is-leap-year?
             is-week-day?
             is-week-end?
@@ -255,11 +255,11 @@ The ‘tz-offset’ argument is the offset with respect to Greenwich Standard Ti
 in seconds. If the argument is not given, the function uses the system's time
 zone."
   (let ((day (if tz-offset
-                 (current-date tz-offset)
-                 (current-date))))
-    (list (date-year day)
-          (date-month day)
-          (date-day day))))
+                 (srfi:current-date tz-offset)
+                 (srfi:current-date))))
+    (list (srfi:date-year day)
+          (srfi:date-month day)
+          (srfi:date-day day))))
 
 (define (date= a b)
   "Return #t if two dates are the same."
