@@ -37,6 +37,8 @@
             date=
             date<
             date>
+            date-max
+            date-min
             date-span
             day-of-year
             date+woy->year
@@ -280,3 +282,11 @@ zone."
   "Return #f if the date ‘a’ lies after the date ‘b’."
   (not (or (date= a b)
            (date< a b))))
+
+(define (date-min . lst)
+  "Return the oldest date in ‘lst’ which has to be non-empty."
+  (car (sort lst date<)))
+
+(define (date-max . lst)
+  "Return the most recent date in ‘lst’ which has to be non-empty."
+  (car (sort lst date>)))
