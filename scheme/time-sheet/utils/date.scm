@@ -268,7 +268,7 @@ zone."
   (equal? a b))
 
 (define (date< a b)
-  "Return #f if the date ‘a’ lies before the date ‘b’."
+  "Return #t if the date ‘a’ lies before the date ‘b’."
   (call/ec (lambda (return)
              (let loop ((rest (zip a b)))
                (if (null? rest) #f
@@ -279,7 +279,7 @@ zone."
                            (else (loop (cdr rest))))))))))
 
 (define (date> a b)
-  "Return #f if the date ‘a’ lies after the date ‘b’."
+  "Return #t if the date ‘a’ lies after the date ‘b’."
   (not (or (date= a b)
            (date< a b))))
 
