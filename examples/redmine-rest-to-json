@@ -94,7 +94,7 @@ do {
                                     to => $to,
                                     limit => $limit,
                                     offset => $offset,
-                                    id = $cfg->get(q{id}));
+                                    id => $cfg->get(q{id}));
     push @results, $result;
     $offset += $limit;
 } while (defined $result->{total_count} && $offset <= $result->{total_count} );
