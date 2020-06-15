@@ -12,7 +12,7 @@
 #   timesheet: https://foo.bar.tld/time_entries.json
 #   issues: https://foo.bar.tld/path/to/issues-dot-json
 #   ssl-ca: /etc/ssl/foo.ext
-#   id: 123
+#   id: me
 #
 # The normal time_entries export via the REST API does not include a whole lot
 # information about the issue that the time recorded was spent on. Actually it
