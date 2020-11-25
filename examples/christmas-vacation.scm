@@ -4,14 +4,22 @@
              (time-sheet utils date))
 
 (define *args* (cdr (command-line)))
+(define *argn* (length *args*))
 
-(define *cmdline-year*
-  (and (= 1 (length *args*))
-       (string->number (car *args*))))
+(define *year* 0)
+(define *start* '(12 24))
+(define *end* '(12 31))
 
-(define *year*
-  (or *cmdline-year*
-      (car (today))))
+(define (set-year! y)
+  (set! *year* y)
+  (set! *start* (cons y *start*))
+  (set! *end*   (cons y *end*)))
+
+(cond ((= *argn* 0) (set-year! (car (today))))
+      ((= *argn* 1) (set-year! (or (string->number (car *args*))
+                                   (car (today)))))
+      (else (begin (format #t "Unknown argument(s): ~a~%" *args*)
+                   (quit 1))))
 
 (define (bool->int b)
   (if b 1 0))
@@ -30,8 +38,7 @@
               (cons* 'weekend (date->day date) date)
               date)))))
 
-(let* ((span (date-span (cons *year* '(12 24))
-                        (cons *year* '(12 31))))
+(let* ((span (date-span *start* *end*))
        (maybe-vacation (map do-i-need-vacation span))
        (days (fold + 0 (map (compose bool->int date?) maybe-vacation))))
   (format #t "Time-Table:~%~%")
