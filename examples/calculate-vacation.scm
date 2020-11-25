@@ -21,6 +21,9 @@
          (and (= 3 (length lst))
               (every string->number lst)))))
 
+(define (date->string date)
+  (format #f "~a-~a-~a" (first date) (second date) (third date)))
+
 (define (string->date str)
   (map string->number (string-split str #\-)))
 
@@ -51,10 +54,15 @@
               (cons* 'weekend (date->day date) date)
               date)))))
 
+(define (decorate obj)
+  (if (date? obj)
+      (cons (date->day obj) obj)
+      obj))
+
 (let* ((span (date-span *start* *end*))
        (maybe-vacation (map do-i-need-vacation span))
        (days (fold + 0 (map (compose bool->int date?) maybe-vacation))))
   (format #t "Time-Table:~%~%")
-  (pretty-print maybe-vacation #:per-line-prefix "  ")
-  (format #t "~%You are going to need ~a days of christmas vacation for ~a.~%"
-          days *year*))
+  (pretty-print (map decorate maybe-vacation) #:per-line-prefix "  ")
+  (format #t "~%You are going to need ~a vacation days for ~a to ~a.~%"
+          days (date->string *start*) (date->string *end*)))
