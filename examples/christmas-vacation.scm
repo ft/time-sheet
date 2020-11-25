@@ -15,9 +15,22 @@
   (set! *start* (cons y *start*))
   (set! *end*   (cons y *end*)))
 
+(define (date-ish? str)
+  (and (string? str)
+       (let ((lst (string-split str #\-)))
+         (and (= 3 (length lst))
+              (every string->number lst)))))
+
+(define (string->date str)
+  (map string->number (string-split str #\-)))
+
 (cond ((= *argn* 0) (set-year! (car (today))))
       ((= *argn* 1) (set-year! (or (string->number (car *args*))
                                    (car (today)))))
+      ((and (= *argn* 2)
+            (every date-ish? *args*))
+       (begin (set! *start* (string->date (first *args*)))
+              (set! *end* (string->date (second *args*)))))
       (else (begin (format #t "Unknown argument(s): ~a~%" *args*)
                    (quit 1))))
 
