@@ -476,10 +476,12 @@ identity function: (lambda (x) x).
 
   (define (maybe-substring maxlen string)
     (if maxlen
-        (let ((strlen (string-length string)))
-          (if (> strlen maxlen)
-              (strcat (substring string 0 maxlen) "...")
-              string))
+        (if (string? string)
+            (let ((strlen (string-length string)))
+              (if (> strlen maxlen)
+                  (strcat (substring string 0 maxlen) "...")
+                  string))
+            (format #f "WARNING: Not a string? ~a~%" string))
         string))
 
   (define (chop-subject string)
