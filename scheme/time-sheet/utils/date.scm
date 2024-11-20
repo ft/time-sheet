@@ -43,7 +43,9 @@
             day-of-year
             date+woy->year
             easter-date
-            today))
+            today
+            week-day
+            week-day*))
 
 (define (date->alist d)
   "Convert a non-annotated date to an annotated one.
