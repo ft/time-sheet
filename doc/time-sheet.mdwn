@@ -111,13 +111,24 @@ arguments into the function. Supported keywords:
   Empty List)
 - `#:extra-leave`: A list of days considered extra leave days. (Default:
   Empty List)
-- `#:hours-per-day`: An integer specifiying the required number of work
-  hours per day. (Default: 8)
+- `#:hours-per-day`: An integer specifiying the required number of work hours
+  per day. Optionally, this can also be a unary function, that is applied to
+  every day in the given span to produce the number of hours of work required
+  for that day. Note, that the number produced only applies to workdays and
+  compensatory days, since all other types of days require no work at all.
+  (Default: 8)
+- `#:weekend?`: This is a predicate function that determines if a given day is
+  part of a weekend. (Default: `is-week-end?` from `(utils date)`)
 
 The return value of the function is a list of weeks of days of tasks, plus
 some meta information per week derived from the data within that and the
 preceding weeks. This value is suitable to be passed into rendering
 functions described later on.
+
+If during a year, the terms of a contract have be changed in ways that impact
+the number of days per week or hours per day of required work, it is possible
+to specify such changes in detail by costumising `#:hours-per-day` and
+`#:weekend?`.
 
 
 ## *Module:* `(time-sheet csv-import)`
