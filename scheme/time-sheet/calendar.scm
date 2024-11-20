@@ -57,7 +57,8 @@ Currently, SPAN is expected to be sorted in chronological order."
                    is-vacation?
                    is-compensatory?
                    is-extra-leave?
-                   is-sick-leave?)
+                   is-sick-leave?
+                   weekend?)
   (let loop ((rest (caddr week))
              (acc '())
              (workdays 0)
@@ -89,7 +90,7 @@ Currently, SPAN is expected to be sorted in chronological order."
                            ((is-compensatory? today) 'compensatory)
                            ((is-extra-leave? today) 'extra-leave)
                            ((is-sick-leave? today) 'sick-leave)
-                           ((is-week-end? today) 'weekend)
+                           ((weekend? today) 'weekend)
                            (else 'workday)))
                (data (filter-day today ts)))
           (let ((hours-of-day (hours-of-data data)))
@@ -114,12 +115,14 @@ Currently, SPAN is expected to be sorted in chronological order."
                        is-vacation?
                        is-compensatory?
                        is-extra-leave?
-                       is-sick-leave?)
+                       is-sick-leave?
+                       weekend?)
   (let* ((fill-week* (lambda (x) (fill-week x ts hpd
                                             is-vacation?
                                             is-compensatory?
                                             is-extra-leave?
-                                            is-sick-leave?)))
+                                            is-sick-leave?
+                                            weekend?)))
          (filled (map fill-week* weeks)))
     (add-calendar-stats filled)))
 
@@ -131,7 +134,8 @@ Currently, SPAN is expected to be sorted in chronological order."
                             (sick-leave '())
                             (holidays '())
                             (span '())
-                            (hours-per-day 8))
+                            (hours-per-day 8)
+                            (weekend? is-week-end?))
   (define is-vacation?
     (if (null? vacation)
         (lambda (x) #f)
@@ -159,4 +163,5 @@ Currently, SPAN is expected to be sorted in chronological order."
                  is-vacation?
                  is-compensatory?
                  is-extra-leave?
-                 is-sick-leave?))
+                 is-sick-leave?
+                 weekend?))
